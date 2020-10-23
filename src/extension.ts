@@ -1,4 +1,7 @@
 import * as vscode from 'vscode';
+import {
+	TerminalOptions
+} from 'vscode';
 
 // this method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -15,6 +18,13 @@ export function activate(context: vscode.ExtensionContext) {
 	};
 	const commandHandler = (msg: String): void => {
 		const config = vscode.workspace.getConfiguration('sws');
+		let options: TerminalOptions = {};
+		options.name = "sws terminal";
+		options.env = {
+				'TARGET': `${config.get('config.target')}`,
+				'F_CPU': `${config.get("config.frequency")}`
+			};
+		vscode.window.createTerminal(options);
 		vscode.window.activeTerminal?.sendText(`make -s ${msg} TARGET=${config.get('config.target')}`);
 	};
 
