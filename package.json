@@ -10,14 +10,86 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:sws.helloWorld"
+		"onCommand:sws.showConfig",
+		"onCommand:sws.build",
+		"onCommand:sws.clean",
+		"onCommand:sws.flash"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"configuration": {
+			"title": "SWS",
+			"properties": {
+				"sws.config.target": {
+					"type": "string",
+					"scope": "machine-overridable",
+					"enum": [
+						"CURIOSITY",
+						"IR_3D",
+						"IR_PORTE",
+						"TRANSMETTEUR_SECOURS"
+					],
+					"default": "CURIOSITY",
+					"description": "The SWS target's project"
+				},
+				"sws.config.cpu": {
+					"type": "string",
+					"scope": "machine-overridable",
+					"enum": [
+						"attiny817",
+						"avr128da48",
+						"atmega644pa"
+					],
+					"default": "atmega644pa",
+					"description": "The CPU core"
+				},
+				"sws.config.frequency": {
+					"type": "integer",
+					"scope": "machine-overridable",
+					"default": 8000000,
+					"description": "The frequency on which the CPU runs"
+				}
+			}
+
+		},
 		"commands": [
 			{
-				"command": "sws.helloWorld",
-				"title": "Hello World"
+				"command": "sws.showConfig",
+				"title": "Show configurations"
+			},
+			{
+				"command": "sws.build",
+				"title": "Build"
+			},
+			{
+				"command": "sws.clean",
+				"title": "Clean"
+			},
+			{
+				"command": "sws.flash",
+				"title": "Flash"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "sws.showConfig",
+				"key": "ctrl+alt+d"
+			},
+			{
+				"command": "sws.build",
+				"key": "ctrl+alt+b",
+				"args": "all"
+			},
+			{
+				"command": "sws.clean",
+				"key": "ctrl+alt+c",
+				"args":"clean"
+
+			},
+			{
+				"command": "sws.flash",
+				"key": "ctrl+alt+f",
+				"args": "flash"
 			}
 		]
 	},
