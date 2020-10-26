@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import {
-	TerminalOptions
-} from 'vscode';
+	SWSTerminalOptions
+} from './sws/terminal';
 
 // this method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -10,33 +10,36 @@ export function activate(context: vscode.ExtensionContext) {
 	const flash = "sws.flash";
 	const showConfig = "sws.showConfig";
 	
-	const showConfigHandler = (): void => {
-		const config = vscode.workspace.getConfiguration('sws');
-		vscode.window.showInformationMessage(
-			`Target: ${config.get('config.target')}`
-		);
+	const activateSWSTerminal = (e?: vscode.ConfigurationChangeEvent) => {
+		const compiler = vscode.workspace.getConfiguration('sws');
+		// for (let key in config.config) {
+		// 	console.log(key);
+		// 	console.log(`${config.get(`config.${key}`)}`);
+		// }
+		vscode.window.activeTerminal?.dispose();
+		const options: vscode.TerminalOptions = new SWSTerminalOptions(compiler.config);
+		const terminal = vscode.window.createTerminal(options);
+		terminal.show();
 	};
 	const commandHandler = (msg: String): void => {
-		const config = vscode.workspace.getConfiguration('sws');
-		let options: TerminalOptions = {};
-		options.name = "sws terminal";
-		options.env = {
-				'TARGET': `${config.get('config.target')}`,
-				'F_CPU': `${config.get("config.frequency")}`
-			};
-		vscode.window.createTerminal(options);
-		vscode.window.activeTerminal?.sendText(`make -s ${msg} TARGET=${config.get('config.target')}`);
+		vscode.window.activeTerminal?.sendText(`make -s ${msg}`);
 	};
+	vscode.workspace.onDidChangeConfiguration(
+		activateSWSTerminal,
+		undefined,
+		context.subscriptions
+	);
+	activateSWSTerminal();
 
-	let dispoBuild = vscode.commands.registerCommand(build, commandHandler);
-	let dispoClean = vscode.commands.registerCommand(clean, commandHandler);
-	let dispoFlash = vscode.commands.registerCommand(flash, commandHandler);
-	let dispoShowConfig = vscode.commands.registerCommand(showConfig, showConfigHandler);
+	vscode.commands.registerCommand(build, commandHandler);
+	vscode.commands.registerCommand(clean, commandHandler);
+	vscode.commands.registerCommand(flash, commandHandler);
+	vscode.commands.registerCommand(showConfig, commandHandler);
 
-	context.subscriptions.push(dispoBuild);
-	context.subscriptions.push(dispoClean);
-	context.subscriptions.push(dispoFlash);
-	context.subscriptions.push(dispoShowConfig);
+	// context.subscriptions.push(dispoBuild);
+	// context.subscriptions.push(dispoClean);
+	// context.subscriptions.push(dispoFlash);
+	// context.subscriptions.push(dispoShowConfig);
 }
 
 // this method is called when your extension is deactivated
