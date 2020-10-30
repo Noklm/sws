@@ -35,11 +35,6 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand(clean, commandHandler);
 	vscode.commands.registerCommand(flash, commandHandler);
 	vscode.commands.registerCommand(showConfig, commandHandler);
-
-	// context.subscriptions.push(dispoBuild);
-	// context.subscriptions.push(dispoClean);
-	// context.subscriptions.push(dispoFlash);
-	// context.subscriptions.push(dispoShowConfig);
 }
 
 // this method is called when your extension is deactivated

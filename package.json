@@ -3,6 +3,7 @@
 	"displayName": "sws",
 	"description": "VScode extension for helping SWS developpers",
 	"version": "0.0.1",
+	"publisher": "JDE",
 	"engines": {
 		"vscode": "^1.50.0"
 	},
@@ -90,7 +91,6 @@
 					"description": "The tool used to flash the chip"
 				}
 			}
-
 		},
 		"commands": [
 			{
@@ -124,8 +124,7 @@
 			{
 				"command": "sws.clean",
 				"key": "ctrl+alt+c",
-				"args":"clean"
-
+				"args": "clean"
 			},
 			{
 				"command": "sws.flash",
@@ -137,6 +136,7 @@
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
+		"pack": "vsce package",
 		"lint": "eslint src --ext ts",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
