@@ -2,13 +2,33 @@ import {
     DebugSession,
     InitializedEvent
 } from 'vscode-debugadapter';
+import { WebsocketDispatcher } from './websocketDispatcher';
 import { DebugProtocol } from 'vscode-debugprotocol';
-
+import { IService } from './services/iservice';
+import { IDispatcher } from './idispatcher';
+import { LaunchRequestArguments } from './launchRequestArguments';
+import {
+    LocatorService,
+    ToolService,
+    // DeviceService,
+    // ProcessService,
+    // MemoryService,
+    // RegisterService,
+    // ExpressionService,
+    // LineNumberService,
+    // StackTraceService,
+    StreamService,
+    // BreakpointsService,
+    RunControlService
+} from './services/services';
 /**
  * Creates a new debug adapter that is used for one debug session.
  * We configure the default implementation of a debug adapter here.
  */
 export class SwsDebugSession extends DebugSession{
+
+    private dispatcher?: IDispatcher;
+    private services? = new Map<string, IService>();
 
     public constructor() {
         super();
@@ -65,7 +85,28 @@ export class SwsDebugSession extends DebugSession{
         super.configurationDoneRequest(response, args);
     }
 
-    protected launchRequest(response: DebugProtocol.LaunchResponse, args: DebugProtocol.LaunchRequestArguments) {
+    protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+
+        this.dispatcher = new WebsocketDispatcher(args.atbackendHost, args.atbackendPort,
+            (message: string) => {
+                console.log(message);
+            },
+            (message: string) => {
+                console.log(message);
+            });
+
+        this.dispatcher.connect((dispatcher: IDispatcher) => {
+            let locator = new LocatorService(dispatcher);
+            locator.hello(() => {
+
+                /* Need to wait for hello before we can start the show */
+                let toolService = new ToolService(dispatcher);
+                let runControlService = new RunControlService(dispatcher);
+
+                this.services?.set('Tool', toolService as IService);
+                this.services?.set('RunControl', runControlService);
+            });
+        });
 
         this.sendResponse(response);
     }

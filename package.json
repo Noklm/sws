@@ -142,7 +142,6 @@
 			{
 				"type": "sws",
 				"label": "Sws Debug",
-
 				"configurationAttributes": {
 					"launch": {
 						"required": [
@@ -153,6 +152,16 @@
 								"type": "string",
 								"description": "Absolute path to a elf file.",
 								"default": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf"
+							},
+							"atbackendHost": {
+								"type": "string",
+								"description": "Host where atbackend is running.",
+								"default": "127.0.0.1"
+							},
+							"atbackendPort": {
+								"type": "number",
+								"description": "websocket port to connect to.",
+								"default": 4710
 							},
 							"trace": {
 								"type": "boolean",
@@ -167,6 +176,8 @@
 						"type": "sws",
 						"request": "launch",
 						"name": "Sws Debug",
+						"atbackendHost": "127.0.0.1",
+						"atbackendPort": 4712,
 						"program": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf",
 						"trace": true
 					}
@@ -209,7 +220,9 @@
 		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {
+		"@types/ws": "^7.2.9",
 		"vscode-debugadapter": "^1.42.1",
-		"vscode-debugprotocol": "^1.42.0"
+		"vscode-debugprotocol": "^1.42.0",
+		"ws": "^7.3.1"
 	}
 }
