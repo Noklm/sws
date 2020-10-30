@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import {
 	SWSTerminalOptions
 } from './sws/terminal';
+import { activateSWSDebug } from './activateSWSDebug';
 
 // this method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -10,6 +11,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const flash = "sws.flash";
 	const showConfig = "sws.showConfig";
 	
+	activateSWSDebug(context);
+
 	const activateSWSTerminal = (e?: vscode.ConfigurationChangeEvent) => {
 		const compiler = vscode.workspace.getConfiguration('sws');
 		// for (let key in config.config) {
