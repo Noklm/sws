@@ -163,11 +163,6 @@
 								"description": "websocket port to connect to.",
 								"default": 4710
 							},
-							"trace": {
-								"type": "boolean",
-								"description": "Enable logging of the Debug Adapter Protocol.",
-								"default": true
-							},
 							"tool": {
 								"type": "string",
 								"description": "Identifier of tool to launch on.",
@@ -182,11 +177,11 @@
 								"type": "any",
 								"description": "Properties of the connection interface.",
 								"default": {
-									"SerialNumber": "ATML2407080200003415",
+									"SerialNumber": "J41800091747",
 									"Type": "com.atmel.avrdbg.connection.cmsis-dap",
-									"DapProduct": "EDBG CMSIS-DAP",
+									"DapProduct": "Atmel-ICE CMSIS-DAP",
 									"UsbVendorId": 1003,
-									"UsbProductId": 8465
+									"UsbProductId": 8513
 								}
 							},
 							"device": {
@@ -207,10 +202,70 @@
 									"KeepTimersRunning": true
 								}
 							},
+							"launchSuspended": {
+								"type": "boolean",
+								"description": "Suspend after launch.",
+								"default": true
+							},
+							"launchAttached": {
+								"type": "boolean",
+								"description": "Attach after launch.",
+								"default": true
+							},
+							"cacheFlash": {
+								"type": "boolean",
+								"description": "Enable flash cache.",
+								"default": true
+							},
+							"eraseRule": {
+								"type": "number",
+								"description": "Which erase should be done during programming.",
+								"default": 0
+							},
+							"preserveEeprom": {
+								"type": "boolean",
+								"description": "Preserve EEPROM during launch.",
+								"default": false
+							},
+							"ramSnippetAddress": {
+								"type": "string",
+								"description": "If applicable, address of ram loader.",
+								"default": "0x20000000"
+							},
+							"progFlashFromRam": {
+								"type": "boolean",
+								"description": "Should ram loader be used.",
+								"default": false
+							},
+							"useGdb": {
+								"type": "boolean",
+								"description": "Use GDB as debug engine and evaluator.",
+								"default": true
+							},
+							"gdbLocation": {
+								"type": "string",
+								"description": "Path to the GDB instance to use.",
+								"default": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe"
+							},
+							"bootSegment": {
+								"type": "number",
+								"description": "Which memory segment to boot from.",
+								"default": 2
+							},
 							"packPath": {
 								"type": "string",
 								"description": "Path to the Device Support Pack for the device.",
 								"default": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc"
+							},
+							"remapSourcePathFrom": {
+								"type": "string",
+								"description": "Remap part of source reference path from this path.",
+								"default": ""
+							},
+							"remapSourcePathTo": {
+								"type": "string",
+								"description": "Remap part of source reference path to this path.",
+								"default": ""
 							}
 						}
 					}
@@ -223,14 +278,14 @@
 						"atbackendHost": "127.0.0.1",
 						"atbackendPort": 4710,
 						"program": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf",
-						"tool": "com.atmel.avrdbg.tool.edbg",
+						"tool": "com.atmel.avrdbg.tool.atmelice",
 						"toolConnection": "com.atmel.avrdbg.connection.cmsis-dap",
 						"connectionProperties": {
-							"SerialNumber": "ATML2407080200003415",
+							"SerialNumber": "J41800091747",
 							"Type": "com.atmel.avrdbg.connection.cmsis-dap",
 							"DapProduct": "EDBG CMSIS-DAP",
 							"UsbVendorId": 1003,
-							"UsbProductId": 8465
+							"UsbProductId": 8513
 						},
 						"device": "attiny817",
 						"interface": "UPDI",
@@ -238,8 +293,18 @@
 							"UpdiClock": 2000000,
 							"KeepTimersRunning": true
 						},
-						"packPath": "C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.106/Atmel.ATmega_DFP.pdsc",
-						"trace": true
+						"launchSuspended": true,
+						"launchAttached": true,
+						"cacheFlash": true,
+						"eraseRule": 0,
+						"preserveEeprom": true,
+						"progFlashFromRam": true,
+						"ramSnippetAddress": "0x20000000",
+						"useGdb": true,
+						"gdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
+						"bootSegment": 2,
+						"packPath": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc"
+
 					}
 				],
 				"configurationSnippets": [

@@ -12,17 +12,19 @@ import { LaunchRequestArguments } from './launchRequestArguments';
 import { IRunControlListener } from './services/runcontrol/irunControlListener';
 import {
     IToolContext,
-    // IProcessContext,
+    IProcessContext,
     // IRegisterContext,
     IRunControlContext,
-
 } from './services/contexts';
-import { IAttachedTool } from './services/tool/iattachedTool';
+import {
+    IConnectionProperties,
+    ITool
+} from './services/tool/itool';
 import {
     LocatorService,
     ToolService,
-    // DeviceService,
-    // ProcessService,
+    DeviceService,
+    ProcessService,
     // MemoryService,
     // RegisterService,
     // ExpressionService,
@@ -114,6 +116,24 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         super.configurationDoneRequest(response, args);
     }
 
+    protected disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments): void {
+        /* Terminate the processes */
+        if (this.services?.get('Processes')) {
+            let processService = <ProcessService>this.services.get('Processes');
+            processService.contexts.forEach(context => {
+                context.terminate();
+            });
+        }
+
+        /* Tear down the tools */
+        if (this.services?.get('Tools')) {
+            let toolService = <ToolService>this.services.get('Tools');
+            toolService.contexts.forEach(context => {
+                context.tearDownTool();
+            });
+        }
+    }
+
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
 
         this.dispatcher = new WebsocketDispatcher(args.atbackendHost, args.atbackendPort,
@@ -127,35 +147,42 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         this.dispatcher.connect((dispatcher: IDispatcher) => {
             let locator = new LocatorService(dispatcher);
             locator.hello(() => {
-                console.log('Ola');
+                 
                 /* Need to wait for hello before we can start the show */
                 let toolService = new ToolService(dispatcher);
+                let deviceService = new DeviceService(dispatcher);
                 let runControlService = new RunControlService(dispatcher);
+                // let streamService = new StreamService(dispatcher);
 
-                this.services?.set('Tool', toolService as IService);
+                this.services?.set('Tool', toolService);
+                this.services?.set('Device', deviceService);
                 this.services?.set('RunControl', runControlService);
+                // this.services?.set('Streams', streamService);
 
                 runControlService.addListener(this);
 
-                toolService.getAttachedTools(args.tool).then((attachedTools: IAttachedTool[]) => {
-                    attachedTools.forEach((attachedTool: IAttachedTool) => {
+                toolService.getAttachedTools().then((attachedTools: ITool[]) => {
+                    attachedTools.forEach((attachedTool: ITool) => {
                         console.log(`${attachedTool.ToolType}`); 
                     });
                 });
 
-                /* Ignition! TODO: need more properties for USB/IP tools */
-                // toolService.setupTool(args.tool, args.toolConnection, args.connectionProperties).then((tool: IToolContext) => {
-                //     tool.setProperties({
-                //         'DeviceName': args.device,
-                //         'PackPath': args.packPath,
-                //         'InterfaceName': args.interface,
-                //         'InterfaceProperties': args.interfaceProperties
-                //     }).catch((reason: Error) => {
-                //         throw reason;
-                //     });
-                // }).catch((reason: Error) => {
+                /* Once a device has been instantiated, we need to actually launch with a module */
+                // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
 
-                // });
+                /* Ignition! TODO: need more properties for USB/IP tools */
+                toolService.setupTool(args.tool, args.toolConnection, args.connectionProperties).then((tool: IToolContext) => {
+                    tool.setProperties({
+                        'DeviceName': args.device,
+                        'PackPath': args.packPath,
+                        'InterfaceName': args.interface,
+                        'InterfaceProperties': args.interfaceProperties
+                    }).catch((reason: Error) => {
+                        throw reason;
+                    });
+                }).catch((reason: Error) => {
+
+                });
 
             });
         });

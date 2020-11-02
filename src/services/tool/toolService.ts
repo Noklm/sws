@@ -5,6 +5,10 @@ import { IToolContext } from './itoolContext';
 import { ToolContext} from './toolContext';
 import { IToolListener } from './itoolListener';
 import { IAttachedTool } from './iattachedTool';
+import {
+	IConnectionProperties,
+	ITool
+} from './itool';
 
 
 export class ToolService extends AbstractService<IToolContext, IToolListener> {
@@ -15,6 +19,11 @@ export class ToolService extends AbstractService<IToolContext, IToolListener> {
 
 	public attachedTools: Array<IAttachedTool> = new Array<IAttachedTool>();
 
+	/**
+	 * Lists all atbackend supported tools as String
+	 * 
+	 * @return Promise<string[]>
+	 */
 	public getSupportedToolTypes(): Promise<string[]> {
 		let self = this;
 
@@ -31,11 +40,15 @@ export class ToolService extends AbstractService<IToolContext, IToolListener> {
 		this.dispatcher.sendCommand(this.name, 'pollForTools', [shouldPoll]);
 	}
 
-	public getAttachedTools(toolType: string): Promise<IAttachedTool[]> {
+	/**
+	 * Lists all atbackend connected tools
+	 * @return Promise<ITool[]> List of all avalaible Tools connected to the PC
+	 */
+	public getAttachedTools(): Promise<ITool[]> {
 		let self = this;
-		return new Promise<IAttachedTool[]>(function (resolve, reject) {
-			self.dispatcher.sendCommand(self.name, 'getAttachedTools', [toolType]).then((data: string) => {
-				let supportedTools = <IAttachedTool[]>JSON.parse(data);
+		return new Promise<ITool[]>(function (resolve, reject) {
+			self.dispatcher.sendCommand(self.name, 'getAttachedTools', []).then((data: string) => {
+				let supportedTools:ITool[] = JSON.parse(data);
 				resolve(supportedTools);
 			}).catch(reject);
 		});

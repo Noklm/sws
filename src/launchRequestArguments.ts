@@ -11,8 +11,6 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	atbackendPort: number;
 
 	program: string;
-	trace: boolean;
-
 	tool: string;
 	toolConnection: string;
 	connectionProperties: any;
@@ -22,5 +20,22 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	interface: string;
 	interfaceProperties: any;
 
+	launchSuspended: boolean;
+	launchAttached: boolean;
+	cacheFlash: boolean;
+
+	eraseRule: number; // enum
+	preserveEeprom: boolean;
+	ramSnippetAddress: number;
+	progFlashFromRam: boolean;
+
+	useGdb: boolean;
+	gdbLocation: string;
+
+	bootSegment: number; // enum
+
 	packPath: string;
+
+	remapSourcePathFrom: string;
+	remapSourcePathTo: string;
 }
