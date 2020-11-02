@@ -156,19 +156,8 @@ export class WebsocketDispatcher implements IDispatcher {
 		return str;
 	}
 
-	private unstringify(data: string[]): any[] {
-		let args = new Array<{}>();
-
-		data.forEach(element => {
-			if (element === '') {
-				args.push({});
-			}
-			else {
-				args.push(JSON.parse(element));
-			}
-		});
-
-		return args;
+	private unstringify(data: string): any {
+		return JSON.parse(data);;
 	}
 
 	private handleMessage(data: string): void {
@@ -253,7 +242,7 @@ export class WebsocketDispatcher implements IDispatcher {
 	}
 
 	private handleEvent(serviceName: string, eventName: string, eventData: string[]): void {
-		if (serviceName in this.eventHandlers) {
+		if (this.eventHandlers.get(serviceName)) {
 			let handler: IEventHandler = this.eventHandlers.get(serviceName) as IEventHandler;
 
 			let handled = handler.eventHandler(eventName, eventData);
@@ -271,11 +260,9 @@ export class WebsocketDispatcher implements IDispatcher {
 			this.log(`[Dispatcher] Response error (${token}): ${errorReport}`);
 		}
 
-		if (token in this.pendingHandlers) {
+		if (this.pendingHandlers.get(token)) {
 			let [resolve, reject] = this.pendingHandlers.get(token) as any[];
-
-			this.pendingHandlers.set(token, []);
-
+			this.pendingHandlers.delete(token);
 			if (errorReport) {
 				reject(Error(errorReport));
 			}

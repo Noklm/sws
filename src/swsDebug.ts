@@ -1,12 +1,23 @@
 import {
     DebugSession,
-    InitializedEvent
+    InitializedEvent,
+    StoppedEvent,
+    ContinuedEvent
 } from 'vscode-debugadapter';
 import { WebsocketDispatcher } from './websocketDispatcher';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IService } from './services/iservice';
 import { IDispatcher } from './idispatcher';
 import { LaunchRequestArguments } from './launchRequestArguments';
+import { IRunControlListener } from './services/runcontrol/irunControlListener';
+import {
+    IToolContext,
+    // IProcessContext,
+    // IRegisterContext,
+    IRunControlContext,
+
+} from './services/contexts';
+import { IAttachedTool } from './services/tool/iattachedTool';
 import {
     LocatorService,
     ToolService,
@@ -21,20 +32,38 @@ import {
     // BreakpointsService,
     RunControlService
 } from './services/services';
+import { NumericalHashCode } from './numericalHashCode';
 /**
  * Creates a new debug adapter that is used for one debug session.
  * We configure the default implementation of a debug adapter here.
  */
-export class SwsDebugSession extends DebugSession{
+export class SwsDebugSession extends DebugSession implements IRunControlListener{
 
     private dispatcher?: IDispatcher;
-    private services? = new Map<string, IService>();
+    private services?= new Map<string, IService>();
+    private hasher = new NumericalHashCode();
 
     public constructor() {
         super();
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
     }
+    /* IRunControlListener */
+    public contextSuspended(contextId: string, pc: number, reason: string, state: any): void {
+        this.sendEvent(new StoppedEvent(reason, this.hasher.hash(contextId), ''));
+    }
+
+    public contextResumed(contextId: string): void {
+        this.sendEvent(new ContinuedEvent(this.hasher.hash(contextId)));
+    }
+    public contextAdded(contexts: IRunControlContext[]): void { }
+    public contextChanged(contexts: IRunControlContext[]): void { }
+    public contextRemoved(contextIds: string[]): void { }
+    public contextException(contextId: string, description: string): void { }
+    public containerSuspended(contextId: string, pc: number, reason: string, state: any, contextIds: string[]): void { }
+    public containerResumed(contextIds: string[]): void { }
+    public contextStateChanged(contextIds: string[]): void { }
+
     /**
          * The 'initialize' request is the first request called by the frontend
          * to interrogate the features the debug adapter provides.
@@ -98,16 +127,40 @@ export class SwsDebugSession extends DebugSession{
         this.dispatcher.connect((dispatcher: IDispatcher) => {
             let locator = new LocatorService(dispatcher);
             locator.hello(() => {
-
+                console.log('Ola');
                 /* Need to wait for hello before we can start the show */
                 let toolService = new ToolService(dispatcher);
                 let runControlService = new RunControlService(dispatcher);
 
                 this.services?.set('Tool', toolService as IService);
                 this.services?.set('RunControl', runControlService);
+
+                runControlService.addListener(this);
+
+                toolService.getAttachedTools(args.tool).then((attachedTools: IAttachedTool[]) => {
+                    attachedTools.forEach((attachedTool: IAttachedTool) => {
+                        console.log(`${attachedTool.ToolType}`); 
+                    });
+                });
+
+                /* Ignition! TODO: need more properties for USB/IP tools */
+                // toolService.setupTool(args.tool, args.toolConnection, args.connectionProperties).then((tool: IToolContext) => {
+                //     tool.setProperties({
+                //         'DeviceName': args.device,
+                //         'PackPath': args.packPath,
+                //         'InterfaceName': args.interface,
+                //         'InterfaceProperties': args.interfaceProperties
+                //     }).catch((reason: Error) => {
+                //         throw reason;
+                //     });
+                // }).catch((reason: Error) => {
+
+                // });
+
             });
         });
 
         this.sendResponse(response);
+        
     }
 }

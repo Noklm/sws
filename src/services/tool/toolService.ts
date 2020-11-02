@@ -18,6 +18,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener> {
 	public getSupportedToolTypes(): Promise<string[]> {
 		let self = this;
 
+		// TODO: Look how to catch rejected response
 		return new Promise<string[]>(function(resolve, reject) {
 			self.dispatcher.sendCommand(self.name, 'getSupportedToolTypes', []).then( (data: string) => {
 				let supportedTools = <string[]>JSON.parse(data);
@@ -30,9 +31,14 @@ export class ToolService extends AbstractService<IToolContext, IToolListener> {
 		this.dispatcher.sendCommand(this.name, 'pollForTools', [shouldPoll]);
 	}
 
-	// TODO; parse any
-	public getAttachedTools(toolType: string): Promise<any> {
-		return this.dispatcher.sendCommand(this.name, 'getAttachedTools', [toolType]);
+	public getAttachedTools(toolType: string): Promise<IAttachedTool[]> {
+		let self = this;
+		return new Promise<IAttachedTool[]>(function (resolve, reject) {
+			self.dispatcher.sendCommand(self.name, 'getAttachedTools', [toolType]).then((data: string) => {
+				let supportedTools = <IAttachedTool[]>JSON.parse(data);
+				resolve(supportedTools);
+			}).catch(reject);
+		});
 	}
 
 	public setupTool(toolType: string, connectionType: string, connectionProperties: any): Promise<IToolContext> {

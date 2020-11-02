@@ -8,6 +8,10 @@ export interface IEventHandler {
 	eventHandler(event: string, eventData: string[]): boolean;
 }
 
+export interface IResponseHandler {
+	responseHandler(response: string, eventData: string[]): boolean;
+}
+
 export interface IProgressEventHandler {
 	progress(progress: number, max: number, text?: string): void;
 }

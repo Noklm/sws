@@ -1,10 +1,10 @@
 'use strict';
 
 import { IDispatcher } from './../abstractService';
-import { IEventHandler } from './../iservice';
+import { IEventHandler, IResponseHandler } from './../iservice';
 import { IPeer } from './ipeer';
 
-export class LocatorService implements IEventHandler {
+export class LocatorService implements IEventHandler, IResponseHandler {
 
 	public peers: Array<IPeer> = new Array<IPeer>();
 	public services: Array<string> = new Array<string>();
@@ -15,6 +15,7 @@ export class LocatorService implements IEventHandler {
 
 	public constructor(dispatcher: IDispatcher) {
 		this.dispatcher = dispatcher;
+		this.dispatcher.eventHandler(this.name, this);
 	}
 
 	private log(message: string): void {
@@ -89,5 +90,9 @@ export class LocatorService implements IEventHandler {
 				this.log(`No matching event handler: ${event}`);
 				return false;
 		}
+	}
+
+	public responseHandler(response: string, eventData: string[]): boolean	{
+		return true;
 	}
 }

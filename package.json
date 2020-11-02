@@ -167,6 +167,50 @@
 								"type": "boolean",
 								"description": "Enable logging of the Debug Adapter Protocol.",
 								"default": true
+							},
+							"tool": {
+								"type": "string",
+								"description": "Identifier of tool to launch on.",
+								"default": "com.atmel.avrdbg.tool.atmelice"
+							},
+							"toolConnection": {
+								"type": "string",
+								"description": "Connection to connect with.",
+								"default": "com.atmel.avrdbg.connection.cmsis-dap"
+							},
+							"connectionProperties": {
+								"type": "any",
+								"description": "Properties of the connection interface.",
+								"default": {
+									"SerialNumber": "ATML2407080200003415",
+									"Type": "com.atmel.avrdbg.connection.cmsis-dap",
+									"DapProduct": "EDBG CMSIS-DAP",
+									"UsbVendorId": 1003,
+									"UsbProductId": 8465
+								}
+							},
+							"device": {
+								"type": "string",
+								"description": "Name of device.",
+								"default": "attiny817"
+							},
+							"interface": {
+								"type": "string",
+								"description": "The debug interface used",
+								"default": "UPDI"
+							},
+							"interfaceProperties": {
+								"type": "any",
+								"description": "",
+								"default": {
+									"UpdiClock": 2000000,
+									"KeepTimersRunning": true
+								}
+							},
+							"packPath": {
+								"type": "string",
+								"description": "Path to the Device Support Pack for the device.",
+								"default": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc"
 							}
 						}
 					}
@@ -177,14 +221,30 @@
 						"request": "launch",
 						"name": "Sws Debug",
 						"atbackendHost": "127.0.0.1",
-						"atbackendPort": 4712,
+						"atbackendPort": 4710,
 						"program": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf",
+						"tool": "com.atmel.avrdbg.tool.edbg",
+						"toolConnection": "com.atmel.avrdbg.connection.cmsis-dap",
+						"connectionProperties": {
+							"SerialNumber": "ATML2407080200003415",
+							"Type": "com.atmel.avrdbg.connection.cmsis-dap",
+							"DapProduct": "EDBG CMSIS-DAP",
+							"UsbVendorId": 1003,
+							"UsbProductId": 8465
+						},
+						"device": "attiny817",
+						"interface": "UPDI",
+						"interfaceProperties": {
+							"UpdiClock": 2000000,
+							"KeepTimersRunning": true
+						},
+						"packPath": "C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.106/Atmel.ATmega_DFP.pdsc",
 						"trace": true
 					}
 				],
 				"configurationSnippets": [
 					{
-						"label": "Mock Debug: Launch",
+						"label": "SWS Debug: Launch",
 						"description": "A new configuration for 'debugging' a atmel target.",
 						"body": {
 							"type": "sws",

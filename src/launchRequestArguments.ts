@@ -12,4 +12,15 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 
 	program: string;
 	trace: boolean;
+
+	tool: string;
+	toolConnection: string;
+	connectionProperties: any;
+
+	device: string;
+
+	interface: string;
+	interfaceProperties: any;
+
+	packPath: string;
 }

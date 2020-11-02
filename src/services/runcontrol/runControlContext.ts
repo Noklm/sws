@@ -13,7 +13,7 @@ export class RunControlContext implements IRunControlContext {
 	public HasState!: boolean;
 	public CanTerminate!: boolean;
 
-	public runcontrolservice! RunControlService;
+	public runcontrolservice!: RunControlService;
 
 
 	public setProperties(properties: any): Promise<any> {
