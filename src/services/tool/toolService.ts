@@ -54,7 +54,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener> {
 		});
 	}
 
-	public setupTool(toolType: string, connectionType: string, connectionProperties: any): Promise<IToolContext> {
+	public setupTool(toolType: string, connectionType: string, connectionProperties: IConnectionProperties): Promise<IToolContext> {
 		let self = this;
 
 		return new Promise<IToolContext>(function(resolve, reject) {
