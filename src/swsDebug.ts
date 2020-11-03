@@ -76,7 +76,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         response.body = response.body || {};
 
         // the adapter implements the configurationDoneRequest.
-        // response.body.supportsConfigurationDoneRequest = true;
+        response.body.supportsConfigurationDoneRequest = true;
 
         // make VS Code to use 'evaluate' when hovering over source
         // response.body.supportsEvaluateForHovers = true;
@@ -117,6 +117,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     }
 
     protected disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments): void {
+        super.disconnectRequest(response, args);
         /* Terminate the processes */
         if (this.services?.get('Processes')) {
             let processService = <ProcessService>this.services.get('Processes');
@@ -132,6 +133,10 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                 context.tearDownTool();
             });
         }
+    }
+
+    protected cancelRequest(response: DebugProtocol.CancelResponse, args: DebugProtocol.CancelArguments) {
+        super.cancelRequest(response, args);
     }
 
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {

@@ -19,18 +19,24 @@
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{
-			"name": "Extension Tests",
-			"type": "extensionHost",
+			"name": "Tests",
+			"type": "node",
 			"request": "launch",
-			"runtimeExecutable": "${execPath}",
+			"cwd": "${workspaceFolder}",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
+				"-u",
+				"tdd",
+				"--timeout",
+				"3000",
+				"--colors",
+				"./out/test/"
 			],
 			"outFiles": [
-				"${workspaceFolder}/out/test/**/*.js"
+				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "${defaultBuildTask}"
+			"internalConsoleOptions": "openOnSessionStart",
+			"preLaunchTask": "npm: compile"
 		}
 	]
 }
