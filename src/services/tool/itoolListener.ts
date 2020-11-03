@@ -2,8 +2,11 @@
 
 import { IContextListener } from './../icontext';
 import { IToolContext } from './itoolContext';
-import { IAttachedTool } from './iattachedTool';
+import {
+	IConnectionProperties,
+	ITool
+} from './itool';
 
 export interface IToolListener extends IContextListener<IToolContext> {
-	attachedToolsChanged(attachedTools: IAttachedTool[]): void;
+	attachedToolsChanged(attachedTools: ITool[]): void;
 }

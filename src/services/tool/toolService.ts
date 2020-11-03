@@ -4,20 +4,21 @@ import { IDispatcher, AbstractService } from './../abstractService';
 import { IToolContext } from './itoolContext';
 import { ToolContext} from './toolContext';
 import { IToolListener } from './itoolListener';
-import { IAttachedTool } from './iattachedTool';
 import {
 	IConnectionProperties,
 	ITool
 } from './itool';
 
-
+/**
+ * Class that describe the TCF Tool Service
+ */
 export class ToolService extends AbstractService<IToolContext, IToolListener> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Tool', dispatcher);
 	}
 
-	public attachedTools: Array<IAttachedTool> = new Array<IAttachedTool>();
+	public attachedTools: Array<ITool> = new Array<ITool>();
 
 	/**
 	 * Lists all atbackend supported tools as String
@@ -42,6 +43,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener> {
 
 	/**
 	 * Lists all atbackend connected tools
+	 * 
 	 * @return Promise<ITool[]> List of all avalaible Tools connected to the PC
 	 */
 	public getAttachedTools(): Promise<ITool[]> {
@@ -92,7 +94,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener> {
 	}
 
 	private handleAttachedToolsChanged(eventData: string[]): void {
-		this.attachedTools = <IAttachedTool[]>JSON.parse(eventData[0]);
+		this.attachedTools = <ITool[]>JSON.parse(eventData[0]);
 		this.log(`AttachedToolsChanged: ${eventData}`);
 
 

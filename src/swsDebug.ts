@@ -169,7 +169,12 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
                 /* Once a device has been instantiated, we need to actually launch with a module */
                 // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
-
+                toolService.getSupportedToolTypes().then((supportedTools: string[]) => {
+                    supportedTools.forEach(
+                        (supportedTool: string) => {
+                            console.log(`${supportedTool}`);
+                        });
+                });
                 /* Ignition! TODO: need more properties for USB/IP tools */
                 toolService.setupTool(args.tool, args.toolConnection, args.connectionProperties).then((tool: IToolContext) => {
                     tool.setProperties({
