@@ -2,7 +2,7 @@ import assert = require('assert');
 import { DebugClient } from 'vscode-debugadapter-testsupport';
 import { DebugProtocol } from 'vscode-debugprotocol';
 
-suite('SWS Debug Adapter TESTS', () => {
+suite('SWS Debug Adapter', () => {
 
     const DEBUG_ADAPTER = './out/swsDebugAdapter.js';
 
@@ -18,9 +18,9 @@ suite('SWS Debug Adapter TESTS', () => {
     });
 
 
-    suite('basic', () => {
+    suite('Basic', () => {
 
-        test('unknown request should produce error', done => {
+        test('Unknown request should produce error', done => {
             dc.send('illegal_request').then(() => {
                 done(new Error("does not report error on unknown request"));
             }).catch(() => {
@@ -29,7 +29,7 @@ suite('SWS Debug Adapter TESTS', () => {
         });
     });
 
-    suite('initialize', () => {
+    suite('Initialize', () => {
 
         test('should return supported features', () => {
             return dc.initializeRequest().then(response => {
