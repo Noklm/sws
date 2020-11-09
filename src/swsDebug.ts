@@ -1,3 +1,4 @@
+// import { window } from 'vscode';
 import {
     DebugSession,
     InitializedEvent,
@@ -43,7 +44,6 @@ import { Channel } from './channel/channel';
 export class SwsDebugSession extends DebugSession implements IRunControlListener{
 
     private dispatcher?: IDispatcher;
-    // private services?= new Map<string, IService>();
     private channel: Channel;
     private hasher = new NumericalHashCode();
 
@@ -149,6 +149,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
 
+        // Create the websocket dispatcher to communicate with atbackend
         this.dispatcher = new WebsocketDispatcher(args.atbackendHost, args.atbackendPort,
             (message: string) => {
                 console.log(message);
@@ -157,25 +158,26 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                 console.log(message);
             });
 
+        // Connects to AtBackend
         this.dispatcher.connect((dispatcher: IDispatcher) => {
+            // Initiate the locator service to start initiating a TCF channel
             let locator = new LocatorService(dispatcher);
             this.channel.setLocalService(locator);
 
             locator.hello((remoteServices: string[]) => {
+                // Callback used when we receive the Hello event from atbackend
                 this.channel.setRemoteServices(remoteServices);
-                 
-                /* Need to wait for hello before we can start the show */
+                // window.showInformationMessage('Hello World!');
                 let toolService = new ToolService(dispatcher);
                 let deviceService = new DeviceService(dispatcher);
-                let runControlService = new RunControlService(dispatcher);
+                // let runControlService = new RunControlService(dispatcher);
                 // let streamService = new StreamService(dispatcher);
                 
                 this.channel.setLocalService(toolService);
                 this.channel.setLocalService(deviceService);
-                this.channel.setLocalService(runControlService);
+                // this.channel.setLocalService(runControlService);
 
-                runControlService.addListener(this);
-
+                // runControlService.addListener(this);
                 toolService.getAttachedTools().then((attachedTools: ITool[]) => {
                     attachedTools.forEach((attachedTool: ITool) => {
                         console.log(`${attachedTool.ToolType}`); 
@@ -184,25 +186,25 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
                 /* Once a device has been instantiated, we need to actually launch with a module */
                 // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
-                toolService.getSupportedToolTypes().then((supportedTools: string[]) => {
-                    supportedTools.forEach(
-                        (supportedTool: string) => {
-                            console.log(`${supportedTool}`);
-                        });
-                });
+                // toolService.getSupportedToolTypes().then((supportedTools: string[]) => {
+                //     supportedTools.forEach(
+                //         (supportedTool: string) => {
+                //             console.log(`${supportedTool}`);
+                //         });
+                // });
                 /* Ignition! TODO: need more properties for USB/IP tools */
-                toolService.setupTool(args.tool, args.toolConnection, args.connectionProperties).then((tool: IToolContext) => {
-                    tool.setProperties({
-                        'DeviceName': args.device,
-                        'PackPath': args.packPath,
-                        'InterfaceName': args.interface,
-                        'InterfaceProperties': args.interfaceProperties
-                    }).catch((reason: Error) => {
-                        throw reason;
-                    });
-                }).catch((reason: Error) => {
+                // toolService.setupTool(args.tool, args.toolConnection, args.connectionProperties).then((tool: IToolContext) => {
+                //     tool.setProperties({
+                //         'DeviceName': args.device,
+                //         'PackPath': args.packPath,
+                //         'InterfaceName': args.interface,
+                //         'InterfaceProperties': args.interfaceProperties
+                //     }).catch((reason: Error) => {
+                //         throw reason;
+                //     });
+                // }).catch((reason: Error) => {
 
-                });
+                // });
 
             });
         });

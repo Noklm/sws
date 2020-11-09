@@ -49,9 +49,9 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	public getAttachedTools(): Promise<ITool[]> {
 		let self = this;
 		return new Promise<ITool[]>(function (resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'getAttachedTools', []).then((data: string) => {
-				let supportedTools:ITool[] = JSON.parse(data);
-				resolve(supportedTools);
+			self.dispatcher.sendCommand(self.getName(), 'getAttachedTools', [""]).then((data: string) => {
+				let attachedTools:ITool[] = JSON.parse(data);
+				resolve(attachedTools);
 			}).catch(reject);
 		});
 	}
