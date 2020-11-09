@@ -35,6 +35,7 @@ import {
     RunControlService
 } from './services/services';
 import { NumericalHashCode } from './numericalHashCode';
+import { Channel } from './channel/channel';
 /**
  * Creates a new debug adapter that is used for one debug session.
  * We configure the default implementation of a debug adapter here.
@@ -42,13 +43,15 @@ import { NumericalHashCode } from './numericalHashCode';
 export class SwsDebugSession extends DebugSession implements IRunControlListener{
 
     private dispatcher?: IDispatcher;
-    private services?= new Map<string, IService>();
+    // private services?= new Map<string, IService>();
+    private channel: Channel;
     private hasher = new NumericalHashCode();
 
     public constructor() {
         super();
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
+        this.channel = new Channel();
     }
     /* IRunControlListener */
     public contextSuspended(contextId: string, pc: number, reason: string, state: any): void {
@@ -118,20 +121,25 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
     protected disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments): void {
         super.disconnectRequest(response, args);
+
         /* Terminate the processes */
-        if (this.services?.get('Processes')) {
-            let processService = <ProcessService>this.services.get('Processes');
-            processService.contexts.forEach(context => {
-                context.terminate();
-            });
-        }
+        // try {
+        //     let processService = <ProcessService>this.channel.getLocalService('Processes');
+        //     processService.contexts.forEach(context => {
+        //         context.terminate();
+        //     });
+        // } catch (e) {
+        //     console.error(e);
+        // }
 
         /* Tear down the tools */
-        if (this.services?.get('Tools')) {
-            let toolService = <ToolService>this.services.get('Tools');
+        try {
+            let toolService = <ToolService>this.channel.getLocalService('Tool');
             toolService.contexts.forEach(context => {
                 context.tearDownTool();
             });
+        } catch (e) {
+            console.error(e);
         }
     }
 
@@ -151,18 +159,20 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
         this.dispatcher.connect((dispatcher: IDispatcher) => {
             let locator = new LocatorService(dispatcher);
-            locator.hello(() => {
+            this.channel.setLocalService(locator);
+
+            locator.hello((remoteServices: string[]) => {
+                this.channel.setRemoteServices(remoteServices);
                  
                 /* Need to wait for hello before we can start the show */
                 let toolService = new ToolService(dispatcher);
                 let deviceService = new DeviceService(dispatcher);
                 let runControlService = new RunControlService(dispatcher);
                 // let streamService = new StreamService(dispatcher);
-
-                this.services?.set('Tool', toolService);
-                this.services?.set('Device', deviceService);
-                this.services?.set('RunControl', runControlService);
-                // this.services?.set('Streams', streamService);
+                
+                this.channel.setLocalService(toolService);
+                this.channel.setLocalService(deviceService);
+                this.channel.setLocalService(runControlService);
 
                 runControlService.addListener(this);
 

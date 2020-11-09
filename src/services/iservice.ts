@@ -1,7 +1,7 @@
 'use strict';
 
 export interface IService extends IEventHandler {
-	name: string;
+	getName(): string;
 }
 
 export interface IEventHandler {

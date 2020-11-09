@@ -1,15 +1,15 @@
 'use strict';
 
 import { IDispatcher } from './../abstractService';
-import { IEventHandler, IResponseHandler } from './../iservice';
+import { IEventHandler, IResponseHandler, IService } from './../iservice';
 import { IPeer } from './ipeer';
 
-export class LocatorService implements IEventHandler, IResponseHandler {
+export class LocatorService implements IEventHandler, IResponseHandler, IService {
 
 	public peers: Array<IPeer> = new Array<IPeer>();
 	public services: Array<string> = new Array<string>();
 
-	private onHelloCallback!: () => void;
+	private onHelloCallback!: (remoteServices:string[]) => void;
 	private dispatcher: IDispatcher;
 	private name = 'Locator';
 
@@ -26,7 +26,20 @@ export class LocatorService implements IEventHandler, IResponseHandler {
 		return this.dispatcher.sendCommand(this.name, 'sync', []);
 	}
 
-	public hello(callback?: () => void): void {
+	/**
+	 * Return the name of the service
+	 */
+	public getName(): string{
+		return this.name;
+	}
+
+	/**
+	 * Sends our Hello event with DA services and register a callback when Hello event from the remote peer
+	 * 
+	 * @param callback Callback used when the hello event is received
+	 */
+	public hello(callback?: (remoteServices:string[]) => void): void {
+		// TODO: Send our known services
 		this.dispatcher.sendEvent(this.name, 'Hello', [[]]);
 
 		if (callback) {
@@ -34,6 +47,11 @@ export class LocatorService implements IEventHandler, IResponseHandler {
 		}
 	}
 
+	/**
+	 * Handle the peerAdded event
+	 * 
+	 * @param eventData new peer
+	 */
 	private handlePeerAdded(eventData: string[]): void {
 		let peer = <IPeer>JSON.parse(eventData[0]);
 		this.peers.push(peer);
@@ -59,13 +77,19 @@ export class LocatorService implements IEventHandler, IResponseHandler {
 		this.log(`Heartbeat: ${eventData}`);
 	}
 
+	/**
+	 * Handle Hello event from the remote peer
+	 * 
+	 * @param eventData List of peer'services 
+	 */
 	private handleHello(eventData: string[]): void {
+		let self = this;
 		this.services = JSON.parse(eventData[0]);
 
 		this.log(`Hello: ${this.services}`);
 
 		if (this.onHelloCallback) {
-			this.onHelloCallback();
+			this.onHelloCallback(self.services);
 		}
 	}
 
@@ -91,7 +115,12 @@ export class LocatorService implements IEventHandler, IResponseHandler {
 				return false;
 		}
 	}
-
+	/**
+	 * Handle TCF Locator response (Locator use only event)
+	 *  
+	 * @param response 
+	 * @param eventData 
+	 */
 	public responseHandler(response: string, eventData: string[]): boolean	{
 		return true;
 	}

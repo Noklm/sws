@@ -12,11 +12,11 @@ export class DeviceService extends AbstractService<IDeviceContext, IDeviceListen
 	}
 
 	public setProperties(contextId: string, properties: any): Promise<string> {
-		return this.dispatcher.sendCommand(this.name, 'setProperties', [contextId, properties]);
+		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
 	}
 
 	public getProperties(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.name, 'getProperties', [contextId]); // TODO; marshal into Context
+		return this.dispatcher.sendCommand(this.getName(), 'getProperties', [contextId]); // TODO; marshal into Context
 	}
 
 	public eventHandler(event: string, eventData: string[]): boolean {

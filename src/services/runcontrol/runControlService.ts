@@ -16,23 +16,23 @@ export class RunControlService extends AbstractService<IRunControlContext, IRunC
 	}
 
 	public resume(contextId: string, mode: ResumeMode, count?: number): Promise<string> {
-		return this.dispatcher.sendCommand(this.name, 'resume', [contextId, mode, count as number | 0]);
+		return this.dispatcher.sendCommand(this.getName(), 'resume', [contextId, mode, count as number | 0]);
 	}
 
 	public suspend(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.name, 'suspend', [contextId]);
+		return this.dispatcher.sendCommand(this.getName(), 'suspend', [contextId]);
 	}
 
 	public terminate(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.name, 'terminate', [contextId]);
+		return this.dispatcher.sendCommand(this.getName(), 'terminate', [contextId]);
 	}
 
 	public detach(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.name, 'detach', [contextId]);
+		return this.dispatcher.sendCommand(this.getName(), 'detach', [contextId]);
 	}
 
 	public setProperties(contextId: string, properties: any): Promise<string> {
-		return this.dispatcher.sendCommand(this.name, 'setProperties', [contextId, properties]);
+		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
 	}
 
 

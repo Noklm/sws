@@ -21,7 +21,7 @@ export class ProcessService extends AbstractService<IProcessContext, IProcessLis
 		let self = this;
 
 		return new Promise<IProcessContext>(function(resolve, reject) {
-			self.dispatcher.sendCommand(self.name, 'launch', [module, deviceContext.ID, launchParameters]).then( (processId: string) => {
+			self.dispatcher.sendCommand(self.getName(), 'launch', [module, deviceContext.ID, launchParameters]).then( (processId: string) => {
 				let context = self.getContext(processId);
 				resolve(context);
 			}).catch(reject);
@@ -29,7 +29,7 @@ export class ProcessService extends AbstractService<IProcessContext, IProcessLis
 	}
 
 	public terminate(id: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.name, 'terminate', [id]);
+		return this.dispatcher.sendCommand(this.getName(), 'terminate', [id]);
 	}
 
 

@@ -6,7 +6,7 @@ import { IContext, IContextListener } from './icontext';
 import { IDispatcher } from './../idispatcher';
 
 abstract class AbstractService<TContext extends IContext, TListener extends IContextListener<TContext>> implements IService {
-	public name: string;
+	private name: string;
 	protected dispatcher: IDispatcher;
 
 	public contexts: Map<string, TContext> = new Map<string, TContext>();
@@ -18,6 +18,10 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		this.dispatcher = dispatcher;
 
 		this.dispatcher.eventHandler(name, (<IEventHandler>this));
+	}
+
+	public getName(): string{
+		return this.name;
 	}
 
 	protected log(message: string): void {
