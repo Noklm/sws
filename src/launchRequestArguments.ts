@@ -17,8 +17,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 
 	// TOOL PROPERTIES
 	tool: string;
-	toolConnection: string;
-	connectionProperties: IConnectionProperties;
+	// toolConnection: string;
+	// connectionProperties: IConnectionProperties;
 
 	// DEVICE PROPERTY
 	device: string;
@@ -46,4 +46,5 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 
 	remapSourcePathFrom: string;
 	remapSourcePathTo: string;
+	debug: boolean;
 }

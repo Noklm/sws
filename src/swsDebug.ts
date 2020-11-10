@@ -170,11 +170,14 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             let locator = new LocatorService(dispatcher);
             let tool = new ToolService(dispatcher);
             let device = new DeviceService(dispatcher);
+            let stream = new StreamService(dispatcher);
 
-            self.channel.setLocalService(locator);
-            self.channel.setLocalService(tool);
+            // Ordre AZ
             self.channel.setLocalService(device);
-
+            self.channel.setLocalService(locator);
+            self.channel.setLocalService(stream);
+            self.channel.setLocalService(tool);
+            
             locator.hello(self.channel.getLocalServices(),
                 (remoteServices: string[]) => {
                 // Callback used when we receive the Hello event from atbackend
@@ -182,9 +185,14 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                 // runControlService.addListener(this);
                 tool.getAttachedTools().then((attachedTools: ITool[]) => {
                     self.channel.setAttachedTools(attachedTools);
+                    tool.setupTool(self.channel.getAttachedTool(args.tool));
                 });
-            });
-
+                if (args.debug) {
+                    stream.setLogBits(0xFFFFFFFF);
+                }
+                
+                });
+            
                 /* Once a device has been instantiated, we need to actually launch with a module */
                 // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
                 // toolService.getSupportedToolTypes().then((supportedTools: string[]) => {
@@ -209,7 +217,6 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
         });
         // });
-
         this.sendResponse(response);
         
     }

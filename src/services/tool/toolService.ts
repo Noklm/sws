@@ -56,11 +56,11 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		});
 	}
 
-	public setupTool(toolType: string, connectionType: string, connectionProperties: IConnectionProperties): Promise<IToolContext> {
+	public setupTool(tool:ITool): Promise<IToolContext> {
 		let self = this;
 
 		return new Promise<IToolContext>(function(resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'setupTool', [toolType, connectionType, connectionProperties]).then( (data: string) => {
+			self.dispatcher.sendCommand(self.getName(), 'setupTool', [tool.ToolType, tool.ConnectionType, tool.ConnectionProperties]).then( (data: string) => {
 				let context = JSON.parse(data);
 				self.getContext(context).then(resolve).catch(reject);
 			}).catch(reject);

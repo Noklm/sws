@@ -1,25 +1,33 @@
 'use strict';
 
 import { IDispatcher } from './../abstractService';
+import { IEventHandler, IService } from './../iservice';
 
 // NOTE: Not really implemented to spec
-export class StreamService {
+export class StreamService implements IEventHandler, IService {
 
 	private dispatcher: IDispatcher;
+	private name: string;
 
 	public constructor(dispatcher: IDispatcher) {
 		this.dispatcher = dispatcher;
+		this.name = 'Stream';
+	}
+
+	public getName() {
+		return this.name;
 	}
 
 	public setLogBits(level: number): Promise<string> {
 		// level is a bitmask
-		return this.dispatcher.sendCommand('Stream', 'setLogBits', [level]);
+		return this.dispatcher.sendCommand(this.name, 'setLogBits', [level]);
 	}
 
-	public eventHandler(event: string, eventData: string[]): void {
+	public eventHandler(event: string, eventData: string[]): boolean {
 		switch (event) {
 			default:
 				this.dispatcher.log(`[Stream] No matching event handler: ${event}`);
+				return false;
 		}
 	}
 }
