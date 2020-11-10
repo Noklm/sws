@@ -1,4 +1,5 @@
 'use strict';
+import { ITool } from '../services/tool/itool';
 
 /**
  * Interface to visualize the ConnectionProperties object from the tool TCF service

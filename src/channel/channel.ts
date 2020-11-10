@@ -1,6 +1,7 @@
 'use strict';
 import { IChannel } from './ichannel';
 import { IService } from '../services/iservice';
+import { ITool } from '../services/tool/itool';
 
 /**
  * Class that describe the TCF Channel
@@ -9,10 +10,12 @@ export class Channel implements IChannel {
 
     private localServices: Map<string, IService>;
     private remoteServices: string[];
+    private attachedTools: Map<string, ITool>;
 
     public constructor() {
         this.localServices = new Map<string, IService>();
         this.remoteServices = new Array<string>();
+        this.attachedTools = new Map<string,ITool>();
     }
     
     /**
@@ -63,4 +66,31 @@ export class Channel implements IChannel {
         this.remoteServices = services;
     }
 
+    /**
+     * Sets all available attached Tools of a TCF channel
+     * 
+     * @param tools list of attached tools 
+     */
+    public setAttachedTools(tools: ITool[]) {
+        tools.forEach((tool: ITool) => {
+            // TODO: gerer plusieurs tools de meme type
+            let name = tool.ToolType.split('.').pop() as string;
+            if (!this.attachedTools.has(name)) {
+                this.attachedTools.set(name, tool);
+            } else {
+                throw new Error(`[Channel] Too many tools with type ${name}`);
+            }
+        });
+    }
+    /**
+     * Returns an attached tool regarding is name
+     * 
+     * @param name name of the tool, atmelice, nedbg, simulator...
+     */
+    public getAttachedTool(name: string) {
+        if (this.attachedTools.has(name)) {
+            return this.attachedTools.get(name) as ITool;
+        }
+        throw new Error(`[Channel] Unknown tool of type ${name}`);
+    }
 }

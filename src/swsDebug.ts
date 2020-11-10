@@ -153,7 +153,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
      * @param response 
      * @param args 
      */
-    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+    protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
         let self = this;
         // Create the websocket dispatcher to communicate with atbackend
         this.dispatcher = new WebsocketDispatcher(args.atbackendHost, args.atbackendPort,
@@ -181,10 +181,9 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                 self.channel.setRemoteServices(remoteServices);
                 // runControlService.addListener(this);
                 tool.getAttachedTools().then((attachedTools: ITool[]) => {
-                    attachedTools.forEach((attachedTool: ITool) => {
-                        console.log(`${attachedTool.ToolType}`); 
-                    });
+                    self.channel.setAttachedTools(attachedTools);
                 });
+            });
 
                 /* Once a device has been instantiated, we need to actually launch with a module */
                 // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
@@ -208,8 +207,8 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
                 // });
 
-            });
         });
+        // });
 
         this.sendResponse(response);
         
