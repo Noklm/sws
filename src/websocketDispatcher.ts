@@ -5,7 +5,11 @@ import { IDispatcher } from './IDispatcher';
 import { IEventHandler, IProgressEventHandler, ICongestionHandler } from './services/iservice';
 
 
-
+/**
+ * The WebsocketDispatcher class is used to send and handle all event, response, commands, ...
+ * from a remote websocket server.
+ * All is dispatch to handlers (TCF Services) to be handle
+ */
 export class WebsocketDispatcher implements IDispatcher {
 
 	private ws?: WebSocket;
@@ -13,7 +17,7 @@ export class WebsocketDispatcher implements IDispatcher {
 	private host: string;
 	private port: number;
 
-	private sendToken: number = 1;
+	private sendToken: number;
 
 	private nil: string = '\x00';
 	private eom: string = '\x03\x01';
@@ -27,6 +31,7 @@ export class WebsocketDispatcher implements IDispatcher {
 	private debugLogger?: (message: string) => void;
 
 	public constructor(host: string, port: number, logger?: (message: string) => void, debugLogger?: (message: string) => void) {
+		this.sendToken = 1;
 		this.host = host;
 		this.port = port;
 
@@ -52,7 +57,11 @@ export class WebsocketDispatcher implements IDispatcher {
 			this.debugLogger(`${data}\n\r`);
 		}
 	}
-
+	/**
+	 * Create a websocket client and connect it to the server via his host and port
+	 * 
+	 * @param callback calls when 'open' event is triggered
+	 */
 	public connect(callback: (dispatcher: IDispatcher) => void): void {
 		let url = 'ws://' + this.host + ':' + this.port;
 		this.log(`[Dispatcher] Connect to: ${url}`);
@@ -77,7 +86,11 @@ export class WebsocketDispatcher implements IDispatcher {
 		});
 
 	}
-
+	/**
+	 * Displays nil (null string) (\u0000) and eom (end of message) (\u0003\u0001) values in a string message
+	 * 
+	 * @param str string to escape nil
+	 */
 	public escapeNil(str: string): string {
 		let self = this;
 		let ret = '';
@@ -96,39 +109,57 @@ export class WebsocketDispatcher implements IDispatcher {
 				ret += str.charAt(i);
 			}
 		}
-
 		return ret;
 	}
-
+	/**
+	 * Register an event handler by his service name
+	 * 
+	 * @param service name of the TCF service 
+	 * @param handler TCF Service class that implements IEventHandler
+	 */
 	public eventHandler(service: string, handler: IEventHandler): void {
-		let self = this;
-
-		self.log(`[Dispatcher] Registering event handler for ${service}`);
-		self.eventHandlers.set(service, handler);
+		this.log(`[Dispatcher] Registering event handler for ${service}`);
+		this.eventHandlers.set(service, handler);
 	}
 
-
+	/**
+	 * Register a progress handler
+	 *
+	 * @param handler TCF Service class that implements IProgressEventHandler
+	 */
 	public progressHandler(handler: IProgressEventHandler): void {
-		let self = this;
-		self.progressHandlers.push(handler);
+		this.progressHandlers.push(handler);
 	}
-
+	/**
+	 * Register a congestion handler
+	 *
+	 * @param handler TCF Service class that implements ICongestionHandler
+	 */
 	public congestionHandler(handler: ICongestionHandler): void {
-		let self = this;
-		self.congestionHandlers.push(handler);
+		this.congestionHandlers.push(handler);
 	}
 
+	/**
+	 * Sends message over websocket
+	 * 
+	 * @param message message to send
+	 */
 	private sendMessage(message: string): void {
-		let self = this;
+		this.debug(`>> ${this.escapeNil(message)}`);
 
-		self.debug(`>> ${self.escapeNil(message)}`);
-
-		if (self.ws) {
-			self.ws.send(message);
+		if (this.ws) {
+			this.ws.send(message);
 		}
 		
 	}
 
+	/**
+	 * Sends TCF command over websocket
+	 * 
+	 * @param serviceName TCF Service
+	 * @param commandName TCF command related to the service
+	 * @param args arguments for the command
+	 */
 	public sendCommand(serviceName: string, commandName: string, args: any[]): Promise<string> {
 		let self = this;
 		let token = this.sendToken++;
@@ -140,11 +171,22 @@ export class WebsocketDispatcher implements IDispatcher {
 		});
 	}
 
+	/**
+	 * Sends TCF event over websocket
+	 * 
+	 * @param serviceName TCF Service
+	 * @param eventName TCF event related to the service
+	 * @param args arguments for the event
+	 */
 	public sendEvent(serviceName: string, eventName: string, args: any[]): void {
 		let self = this;
 		this.sendMessage(`E${self.nil}${serviceName}${self.nil}${eventName}${self.nil}${self.stringify(args)}${self.eom}`);
 	}
-
+	/**
+	 * Stringify objects to be send over websocket
+	 * 
+	 * @param args Objects to stringify
+	 */
 	private stringify(args: any[]): string {
 		let self = this;
 		let str = '';
@@ -156,10 +198,30 @@ export class WebsocketDispatcher implements IDispatcher {
 		return str;
 	}
 
+	
 	private unstringify(data: string): any {
 		return JSON.parse(data);;
 	}
 
+	/**
+	 * Handles TCF message
+	 * 
+	 * @param data TCF message
+	 * 
+	 * Command
+	 *   C • <token> • <service> • <command> • <arguments> • <eom>
+	 * Progress
+	 *   P • <token> • <progress_data> • <eom>
+	 * Result
+	 *   R • <token> • <result_data> • <eom>
+	 * Event
+	 *   E • <service> • <event> • <event_data> • <eom>
+	 * Flow
+	 *   F • <traffic_congestion_level> • <eom>
+	 * 
+	 * • = nil
+	 * <eom> = eom
+	 */
 	private handleMessage(data: string): void {
 		let self = this;
 
@@ -168,15 +230,16 @@ export class WebsocketDispatcher implements IDispatcher {
 		let elements = data.split(self.nil);
 
 		if (elements.length < 3) {
-			throw `Message has too few parts`;
+			throw new Error(`Message has too few parts`);
 		}
 		if (elements.pop() !== self.eom) {
-			throw `Message has bad termination`;
+			throw new Error(`Message has bad termination`);
 		}
 
-		let message = elements.shift();
+		// first element of TCF message give the type of the TCF message
+		let tcfMessageType = elements.shift();
 
-		switch (message) {
+		switch (tcfMessageType) {
 			case 'E':
 				self.decodeEvent(elements);
 				break;
@@ -193,11 +256,15 @@ export class WebsocketDispatcher implements IDispatcher {
 				self.decodeFlowControl(elements);
 				break;
 			default:
-				self.log(`Unkown TCF message: ${message}`);
+				self.log(`Unkown TCF message type: ${tcfMessageType}`);
 				break;
 		}
 	}
-
+	/**
+	 * Decodes TCF event message
+	 * 
+	 * @param data [<service>, <event>, <event_data>]
+	 */
 	private decodeEvent(data: string[]): void {
 		let serviceName = data.shift() as string;
 		let eventName = data.shift() as string;
@@ -206,9 +273,13 @@ export class WebsocketDispatcher implements IDispatcher {
 		this.handleEvent(serviceName, eventName, eventData);
 	}
 
-
+	/**
+	 * Decodes intermediate result from a progress message
+	 * 
+	 * @param data [<token>, <progress_data>]
+	 */
 	private decodeIntermediateResult(data: string[]): void {
-		// let token = +data[0];
+		let token = +data[0];
 		let eventData = JSON.parse(data[1]);
 
 		this.progressHandlers.forEach(handler => {
@@ -218,18 +289,33 @@ export class WebsocketDispatcher implements IDispatcher {
 		this.log(`[Dispatcher] Progress: ${eventData}`);
 	}
 
+	/**
+	 * Decodes a response to a command message
+	 * 
+	 * @param data [<token>, <error_code>, <result_data>]
+	 */
 	private decodeFinalResult(data: string[]): void {
 		let token = +data[0];
 		let errorReport = data[1];
-		let eventData = data[2];
+		let resultData = data[2];
 
-		this.handleResponse(token, errorReport, eventData);
+		this.handleResponse(token, errorReport, resultData);
 	}
 
+	/**
+	 * Decodes unknown TCF message
+	 * 
+	 * @param data unknown data 
+	 */
 	private decodeUnknown(data: string[]): void {
 		this.log(`[Dispatcher] Unknown: ${data}`);
 	}
 
+	/**
+	 * Decodes Flow TCF message
+	 * 
+	 * @param data [<traffic_congestion_level>]
+	 */
 	private decodeFlowControl(data: string[]): void {
 		let congestion = +(data.shift() as string);
 
@@ -240,7 +326,13 @@ export class WebsocketDispatcher implements IDispatcher {
 		this.log(`[Dispatcher] Congestion: ${congestion}`);
 
 	}
-
+	/**
+	 * Handles a TCF event
+	 * 
+	 * @param serviceName TCF service's name
+	 * @param eventName Event name
+	 * @param eventData Data of the event
+	 */
 	private handleEvent(serviceName: string, eventName: string, eventData: string[]): void {
 		if (this.eventHandlers.get(serviceName)) {
 			let handler: IEventHandler = this.eventHandlers.get(serviceName) as IEventHandler;
@@ -255,6 +347,13 @@ export class WebsocketDispatcher implements IDispatcher {
 		}
 	}
 
+	/**
+	 * Handles the response to a TCF command
+	 * 
+	 * @param token token of the command
+	 * @param errorReport if there is an response error
+	 * @param args response arguments
+	 */
 	private handleResponse(token: number, errorReport: string, args: string) {
 		if (errorReport) {
 			this.log(`[Dispatcher] Response error (${token}): ${errorReport}`);
