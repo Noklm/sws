@@ -10,5 +10,5 @@ export interface IChannel {
     // getters
     getRemoteServices(): string[];
     getLocalServices(): string[];
-    getLocalService(name: string): IService;   
+    getService(name: string): IService;   
 }

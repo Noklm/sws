@@ -43,18 +43,23 @@ suite('Tests channel', () => {
             assert.deepStrictEqual(channel.getLocalServices(), ["Tool", "Locator"]);
         });
 
-        test('Request an unknown service should produce error', () => {
+        test('Request an unknown service by peers should produce error', () => {
             let name = 'Tool';
             let error = new Error(`[Channel] Unknown ${name} service`);
             assert.throws(() => {
-                channel.getLocalService(name);
+                channel.getService(name);
+            }, error);
+            channel.setLocalService(locatorService);
+            assert.throws(() => {
+                channel.getService(name);
             }, error);
         });
 
-        test('Request an existing service should return the service object', () => {
+        test('Service needs to be known by two peers to be return', () => {
             let name = 'Tool';
-             channel.setLocalService(toolService);
-            assert.strictEqual(channel.getLocalService(name), toolService);
+            channel.setLocalService(toolService);
+            channel.setRemoteServices([name]);
+            assert.strictEqual(channel.getService(name), toolService);
         });
     });
 

@@ -134,7 +134,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
         /* Tear down the tools */
         try {
-            let toolService = <ToolService>this.channel.getLocalService('Tool');
+            let toolService = <ToolService>this.channel.getService('Tool');
             toolService.contexts.forEach(context => {
                 context.tearDownTool();
             });
@@ -153,9 +153,8 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
      * @param response 
      * @param args 
      */
-    protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
         let self = this;
-        self.channel
         // Create the websocket dispatcher to communicate with atbackend
         this.dispatcher = new WebsocketDispatcher(args.atbackendHost, args.atbackendPort,
             (message: string) => {
