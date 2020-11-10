@@ -166,23 +166,7 @@
 							"tool": {
 								"type": "string",
 								"description": "Identifier of tool to launch on.",
-								"default": "com.atmel.avrdbg.tool.atmelice"
-							},
-							"toolConnection": {
-								"type": "string",
-								"description": "Connection to connect with.",
-								"default": "com.atmel.avrdbg.connection.cmsis-dap"
-							},
-							"connectionProperties": {
-								"type": "any",
-								"description": "Properties of the connection interface.",
-								"default": {
-									"SerialNumber": "J41800091747",
-									"Type": "com.atmel.avrdbg.connection.cmsis-dap",
-									"DapProduct": "Atmel-ICE CMSIS-DAP",
-									"UsbVendorId": 1003,
-									"UsbProductId": 8513
-								}
+								"default": "atmelice"
 							},
 							"device": {
 								"type": "string",
@@ -278,15 +262,7 @@
 						"atbackendHost": "127.0.0.1",
 						"atbackendPort": 4710,
 						"program": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf",
-						"tool": "com.atmel.avrdbg.tool.atmelice",
-						"toolConnection": "com.atmel.avrdbg.connection.cmsis-dap",
-						"connectionProperties": {
-							"SerialNumber": "J41800091747",
-							"Type": "com.atmel.avrdbg.connection.cmsis-dap",
-							"DapProduct": "EDBG CMSIS-DAP",
-							"UsbVendorId": 1003,
-							"UsbProductId": 8513
-						},
+						"tool": "atmelice",
 						"device": "attiny817",
 						"interface": "UPDI",
 						"interfaceProperties": {
