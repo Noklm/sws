@@ -147,8 +147,15 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         super.cancelRequest(response, args);
     }
 
+    /**
+     * Initialize the TCF channel and the WebsocketDispatcher
+     * 
+     * @param response 
+     * @param args 
+     */
     protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
-
+        let self = this;
+        self.channel
         // Create the websocket dispatcher to communicate with atbackend
         this.dispatcher = new WebsocketDispatcher(args.atbackendHost, args.atbackendPort,
             (message: string) => {
@@ -160,25 +167,21 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
         // Connects to AtBackend
         this.dispatcher.connect((dispatcher: IDispatcher) => {
-            // Initiate the locator service to start initiating a TCF channel
+            // Initiate the TCF channel after that websocket connection is opened
             let locator = new LocatorService(dispatcher);
-            this.channel.setLocalService(locator);
+            let tool = new ToolService(dispatcher);
+            let device = new DeviceService(dispatcher);
 
-            locator.hello((remoteServices: string[]) => {
+            self.channel.setLocalService(locator);
+            self.channel.setLocalService(tool);
+            self.channel.setLocalService(device);
+
+            locator.hello(self.channel.getLocalServices(),
+                (remoteServices: string[]) => {
                 // Callback used when we receive the Hello event from atbackend
-                this.channel.setRemoteServices(remoteServices);
-                // window.showInformationMessage('Hello World!');
-                let toolService = new ToolService(dispatcher);
-                let deviceService = new DeviceService(dispatcher);
-                // let runControlService = new RunControlService(dispatcher);
-                // let streamService = new StreamService(dispatcher);
-                
-                this.channel.setLocalService(toolService);
-                this.channel.setLocalService(deviceService);
-                // this.channel.setLocalService(runControlService);
-
+                self.channel.setRemoteServices(remoteServices);
                 // runControlService.addListener(this);
-                toolService.getAttachedTools().then((attachedTools: ITool[]) => {
+                tool.getAttachedTools().then((attachedTools: ITool[]) => {
                     attachedTools.forEach((attachedTool: ITool) => {
                         console.log(`${attachedTool.ToolType}`); 
                     });

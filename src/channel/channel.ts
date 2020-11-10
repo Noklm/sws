@@ -28,7 +28,11 @@ export class Channel implements IChannel {
      * Returns all local services of the TCF channel
      */
     public getLocalServices() {
-        return this.localServices.values();
+        let services: string[] = [];
+        for (let service of this.localServices.values()) {
+            services.push(service.getName());
+        }
+        return services;
     }
 
     /**

@@ -38,9 +38,8 @@ export class LocatorService implements IEventHandler, IResponseHandler, IService
 	 * 
 	 * @param callback Callback used when the hello event is received
 	 */
-	public hello(callback?: (remoteServices:string[]) => void): void {
-		// TODO: Send our known services
-		this.dispatcher.sendEvent(this.name, 'Hello', [[]]);
+	public hello(localServices: string[], callback?: (remoteServices:string[]) => void): void {
+		this.dispatcher.sendEvent(this.name, 'Hello', [localServices]);
 
 		if (callback) {
 			this.onHelloCallback = callback;
@@ -85,8 +84,6 @@ export class LocatorService implements IEventHandler, IResponseHandler, IService
 	private handleHello(eventData: string[]): void {
 		let self = this;
 		this.services = JSON.parse(eventData[0]);
-
-		this.log(`Hello: ${this.services}`);
 
 		if (this.onHelloCallback) {
 			this.onHelloCallback(self.services);

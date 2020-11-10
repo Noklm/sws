@@ -40,7 +40,7 @@ suite('Tests channel', () => {
         test('Tool and Locator services should be added', () => {
             channel.setLocalService(toolService);
             channel.setLocalService(locatorService);
-            assert.deepStrictEqual(Array.from(channel.getLocalServices()), [toolService, locatorService]);
+            assert.deepStrictEqual(channel.getLocalServices(), ["Tool", "Locator"]);
         });
 
         test('Request an unknown service should produce error', () => {

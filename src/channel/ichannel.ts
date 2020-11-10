@@ -9,6 +9,6 @@ export interface IChannel {
 
     // getters
     getRemoteServices(): string[];
-    getLocalServices(): IterableIterator<IService>;
+    getLocalServices(): string[];
     getLocalService(name: string): IService;   
 }
