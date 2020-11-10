@@ -29,7 +29,7 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 	}
 
 	// TODO: remove IService and use service impl this
-	abstract fromJson(service: IService, data: TContext): TContext;
+	abstract fromJson(data: TContext): TContext;
 
 	public eventHandler(event: string, eventData: string[]): boolean {
 		switch (event) {
@@ -54,7 +54,7 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		let newContexts = new Array<TContext>();
 
 		contextsData.forEach(contextData => {
-			let context = self.fromJson(self, contextData);
+			let context = self.fromJson(contextData);
 			this.contexts.set(context.ID, context);
 			newContexts.push(context);
 		});
@@ -73,7 +73,7 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		let newContexts = new Array<TContext>();
 
 		contextsData.forEach(contextData => {
-			let context = self.fromJson(self, contextData);
+			let context = self.fromJson(contextData);
 			this.contexts.set(context.ID, context);
 			newContexts.push(context);
 		});

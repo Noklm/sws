@@ -4,13 +4,12 @@ import { IContext } from './../icontext';
 
 export interface IToolContext extends IContext {
 	Name: string;
-	DeviceId?: string;
-	// InterfaceName?: string;
-	// // Keep InterfaceProperties to any type while we don't know all interfaceProperties
-	// InterfaceProperties?: any;
+	DeviceId: string;
+	MajorFirmwareVersionOnDisk: number;
+	MinorFirmwareVersionOnDisk: number;
+	CanEraseXmegaPages: number;
 
 	toString(): string;
-
 	connect(): void;
 	tearDownTool(): void;
 }

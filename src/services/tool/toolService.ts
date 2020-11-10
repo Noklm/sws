@@ -79,6 +79,10 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
 	}
 
+	public checkFirmware(contextId: string): Promise<string> {
+		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId]);
+	}
+
 	public eventHandler(event: string, eventData: string[]): boolean {
 		if (super.eventHandler(event, eventData)) {
 			return true;
@@ -103,18 +107,8 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		});
 	}
 
-	public fromJson(service: ToolService, data: IToolContext): ToolContext {
-		let context = new ToolContext();
-
-		context.service = service;
-
-		context.ID = data['ID'];
-		context.Name = data['Name'];
-
-		if ('DeviceID' in data) {
-			context.DeviceId = data['DeviceId'];
-		}
-
+	public fromJson(data: IToolContext): ToolContext {
+		let context = new ToolContext(data, this);
 		return context;
 	}
 }
