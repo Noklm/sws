@@ -44,7 +44,6 @@ suite('Tool service', () => {
                     assert.strictEqual(tools.some((tool) => {
                         return tool.ToolType === 'com.atmel.avrdbg.tool.atmelice';
                     }), true);
-                    // assert.strictEqual(tools[0], true);
                 });
         });
     });
