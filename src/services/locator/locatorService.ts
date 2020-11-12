@@ -4,10 +4,9 @@ import { IDispatcher } from './../abstractService';
 import { IEventHandler, IResponseHandler, IService } from './../iservice';
 import { IPeer } from './ipeer';
 
-export class LocatorService implements IEventHandler, IResponseHandler, IService {
+export class LocatorService implements IEventHandler, IService {
 
 	public peers: Array<IPeer> = new Array<IPeer>();
-	public services: Array<string> = new Array<string>();
 
 	private onHelloCallback!: (remoteServices:string[]) => void;
 	private dispatcher: IDispatcher;
@@ -82,11 +81,8 @@ export class LocatorService implements IEventHandler, IResponseHandler, IService
 	 * @param eventData List of peer'services 
 	 */
 	private handleHello(eventData: string[]): void {
-		let self = this;
-		this.services = JSON.parse(eventData[0]);
-
 		if (this.onHelloCallback) {
-			this.onHelloCallback(self.services);
+			this.onHelloCallback(JSON.parse(eventData[0]));
 		}
 	}
 
@@ -111,14 +107,5 @@ export class LocatorService implements IEventHandler, IResponseHandler, IService
 				this.log(`No matching event handler: ${event}`);
 				return false;
 		}
-	}
-	/**
-	 * Handle TCF Locator response (Locator use only event)
-	 *  
-	 * @param response 
-	 * @param eventData 
-	 */
-	public responseHandler(response: string, eventData: string[]): boolean	{
-		return true;
 	}
 }

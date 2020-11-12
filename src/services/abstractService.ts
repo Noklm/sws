@@ -28,7 +28,6 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		this.dispatcher.log(`[${this.name}] ${message}`);
 	}
 
-	// TODO: remove IService and use service impl this
 	abstract fromJson(data: TContext): TContext;
 
 	public eventHandler(event: string, eventData: string[]): boolean {
