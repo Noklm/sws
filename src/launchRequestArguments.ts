@@ -1,7 +1,6 @@
 'use strict';
 
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { IConnectionProperties } from './services/tool/itool';
 
 /**
  * This interface should always match the schema found in the sws-debug extension manifest.
