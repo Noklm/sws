@@ -1,12 +1,13 @@
 'use strict';
 
 import { IService, IEventHandler } from './iservice';
-import { IContext, IContextListener } from './icontext';
+import { IContext, IContextListener, IContextConstructor } from './icontext';
 
 import { IDispatcher } from './../idispatcher';
+import { ToolContext } from './tool/toolContext';
 
 abstract class AbstractService<TContext extends IContext, TListener extends IContextListener<TContext>> implements IService {
-	private name: string;
+	private _name: string;
 	protected dispatcher: IDispatcher;
 
 	public contexts: Map<string, TContext> = new Map<string, TContext>();
@@ -14,18 +15,18 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 
 
 	public constructor(name: string, dispatcher: IDispatcher) {
-		this.name = name;
+		this._name = name;
 		this.dispatcher = dispatcher;
 
 		this.dispatcher.eventHandler(name, (<IEventHandler>this));
 	}
 
 	public getName(): string{
-		return this.name;
+		return this._name;
 	}
 
 	protected log(message: string): void {
-		this.dispatcher.log(`[${this.name}] ${message}`);
+		this.dispatcher.log(`[${this._name}] ${message}`);
 	}
 
 	abstract fromJson(data: TContext): TContext;
