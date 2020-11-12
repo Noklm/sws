@@ -1,6 +1,6 @@
 'use strict';
 
-import { IService, IEventHandler } from './iservice';
+import { IService, IEventHandler, IEvent } from './iservice';
 import { IContext, IContextListener, IContextConstructor } from './icontext';
 
 import { IDispatcher } from './../idispatcher';
@@ -31,16 +31,16 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 
 	abstract fromJson(data: TContext): TContext;
 
-	public eventHandler(event: string, eventData: string[]): boolean {
-		switch (event) {
+	public eventHandler(event: IEvent): boolean {
+		switch (event.command) {
 			case 'contextAdded':
-				this.handleContextAdded(eventData);
+				this.handleContextAdded(event.args);
 				return true;
 			case 'contextChanged':
-				this.handleContextChanged(eventData);
+				this.handleContextChanged(event.args);
 				return true;
 			case 'contextRemoved':
-				this.handleContextRemoved(eventData);
+				this.handleContextRemoved(event.args);
 				return true;
 			default:
 				return false;

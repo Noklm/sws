@@ -5,7 +5,7 @@ export interface IService extends IEventHandler {
 }
 
 export interface IEventHandler {
-	eventHandler(event: string, eventData: string[]): boolean;
+	eventHandler(event:IEvent): boolean;
 }
 
 export interface IResponseHandler {
@@ -18,4 +18,13 @@ export interface IProgressEventHandler {
 
 export interface ICongestionHandler {
 	congestion(level: number): void;
+}
+
+export interface IEventListener{
+	handleEvent(event: IEvent): void;
+}
+
+export interface IEvent{
+	command: string;
+	args: any;
 }

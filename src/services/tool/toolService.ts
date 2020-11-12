@@ -4,6 +4,7 @@ import { IDispatcher, AbstractService } from './../abstractService';
 import { IToolContext } from './itoolContext';
 import { ToolContext} from './toolContext';
 import { IToolListener } from './itoolListener';
+import { IEvent } from './../iservice';
 import {
 	IConnectionProperties,
 	ITool
@@ -83,14 +84,14 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId]);
 	}
 
-	public eventHandler(event: string, eventData: string[]): boolean {
-		if (super.eventHandler(event, eventData)) {
+	public eventHandler(event: IEvent): boolean {
+		if (super.eventHandler(event)) {
 			return true;
 		}
 
-		switch (event) {
+		switch (event.command) {
 			case 'attachedToolsChanged':
-				this.handleAttachedToolsChanged(eventData);
+				this.handleAttachedToolsChanged(event.args);
 				return true;
 			default:
 				return false;

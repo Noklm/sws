@@ -1,7 +1,7 @@
 'use strict';
 
 import { IDispatcher } from './../abstractService';
-import { IEventHandler, IResponseHandler, IService } from './../iservice';
+import { IEventHandler, IResponseHandler, IService, IEvent } from './../iservice';
 import { IPeer } from './ipeer';
 
 export class LocatorService implements IEventHandler, IService {
@@ -86,22 +86,22 @@ export class LocatorService implements IEventHandler, IService {
 		}
 	}
 
-	public eventHandler(event: string, eventData: string[]): boolean {
-		switch (event) {
+	public eventHandler(event: IEvent): boolean {
+		switch (event.command) {
 			case 'peerAdded':
-				this.handlePeerAdded(eventData);
+				this.handlePeerAdded(event.args);
 				return true;
 			case 'peerChanged':
-				this.handlePeerChanged(eventData);
+				this.handlePeerChanged(event.args);
 				return true;
 			case 'peerRemoved':
-				this.handlePeerRemoved(eventData);
+				this.handlePeerRemoved(event.args);
 				return true;
 			case 'peerHeartBeat':
-				this.handlePeerHeartBeat(eventData);
+				this.handlePeerHeartBeat(event.args);
 				return true;
 			case 'Hello':
-				this.handleHello(eventData);
+				this.handleHello(event.args);
 				return true;
 			default:
 				this.log(`No matching event handler: ${event}`);

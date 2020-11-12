@@ -336,8 +336,11 @@ export class WebsocketDispatcher implements IDispatcher {
 	private handleEvent(serviceName: string, eventName: string, eventData: string[]): void {
 		if (this.eventHandlers.get(serviceName)) {
 			let handler: IEventHandler = this.eventHandlers.get(serviceName) as IEventHandler;
-
-			let handled = handler.eventHandler(eventName, eventData);
+			let event = {
+				command: eventName,
+				args: eventData
+			};
+			let handled = handler.eventHandler(event);
 			if (!handled) {
 				this.log(`[${serviceName}] Event handler failed to handle event '${eventName}'`);
 			}

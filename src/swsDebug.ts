@@ -10,12 +10,12 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { IService } from './services/iservice';
 import { IDispatcher } from './idispatcher';
 import { LaunchRequestArguments } from './launchRequestArguments';
-import { IRunControlListener } from './services/runcontrol/irunControlListener';
+// import { IRunControlListener } from './services/runcontrol/irunControlListener';
 import {
     IToolContext,
-    IProcessContext,
+    // IProcessContext,
     // IRegisterContext,
-    IRunControlContext,
+    // IRunControlContext,
 } from './services/contexts';
 import {
     IConnectionProperties,
@@ -24,8 +24,8 @@ import {
 import {
     LocatorService,
     ToolService,
-    DeviceService,
-    ProcessService,
+    // DeviceService,
+    // ProcessService,
     // MemoryService,
     // RegisterService,
     // ExpressionService,
@@ -33,7 +33,7 @@ import {
     // StackTraceService,
     StreamService,
     // BreakpointsService,
-    RunControlService
+    // RunControlService
 } from './services/services';
 import { NumericalHashCode } from './numericalHashCode';
 import { Channel } from './channel/channel';
@@ -41,7 +41,7 @@ import { Channel } from './channel/channel';
  * Creates a new debug adapter that is used for one debug session.
  * We configure the default implementation of a debug adapter here.
  */
-export class SwsDebugSession extends DebugSession implements IRunControlListener{
+export class SwsDebugSession extends DebugSession /*implements IRunControlListener*/{
 
     private dispatcher?: IDispatcher;
     private channel: Channel;
@@ -61,8 +61,8 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     public contextResumed(contextId: string): void {
         this.sendEvent(new ContinuedEvent(this.hasher.hash(contextId)));
     }
-    public contextAdded(contexts: IRunControlContext[]): void { }
-    public contextChanged(contexts: IRunControlContext[]): void { }
+    // public contextAdded(contexts: IRunControlContext[]): void { }
+    // public contextChanged(contexts: IRunControlContext[]): void { }
     public contextRemoved(contextIds: string[]): void { }
     public contextException(contextId: string, description: string): void { }
     public containerSuspended(contextId: string, pc: number, reason: string, state: any, contextIds: string[]): void { }
@@ -134,7 +134,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
         /* Tear down the tools */
         try {
-            let toolService = <ToolService>this.channel.getService('Tool');
+            let toolService = this.channel.getService<ToolService>('Tool');
             toolService.contexts.forEach(context => {
                 context.tearDownTool();
             });
@@ -169,11 +169,11 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             // Initiate the TCF channel after that websocket connection is opened
             let locator = new LocatorService(dispatcher);
             let tool = new ToolService(dispatcher);
-            let device = new DeviceService(dispatcher);
+            // let device = new DeviceService(dispatcher);
             let stream = new StreamService(dispatcher);
 
             // Ordre AZ
-            self.channel.setLocalService(device);
+            // self.channel.setLocalService(device);
             self.channel.setLocalService(locator);
             self.channel.setLocalService(stream);
             self.channel.setLocalService(tool);

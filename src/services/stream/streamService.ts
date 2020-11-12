@@ -1,7 +1,7 @@
 'use strict';
 
 import { IDispatcher } from './../abstractService';
-import { IEventHandler, IService } from './../iservice';
+import { IEventHandler, IService, IEvent } from './../iservice';
 
 // NOTE: Not really implemented to spec
 export class StreamService implements IEventHandler, IService {
@@ -23,10 +23,10 @@ export class StreamService implements IEventHandler, IService {
 		return this.dispatcher.sendCommand(this.name, 'setLogBits', [level]);
 	}
 
-	public eventHandler(event: string, eventData: string[]): boolean {
+	public eventHandler(event: IEvent): boolean {
 		switch (event) {
 			default:
-				this.dispatcher.log(`[Stream] No matching event handler: ${event}`);
+				this.dispatcher.log(`[Stream] No matching event handler: ${event.command}`);
 				return false;
 		}
 	}
