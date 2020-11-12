@@ -251,10 +251,10 @@
 								"description": "Remap part of source reference path to this path.",
 								"default": ""
 							},
-							"debug": {
+							"noDebug": {
 								"type": "boolean",
 								"description": "Use to see debug trace in atbackend",
-								"default": false
+								"default": true
 							}
 						}
 					}
@@ -285,7 +285,7 @@
 						"gdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
 						"bootSegment": 2,
 						"packPath": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc",
-						"debug": false
+						"noDebug": true
 					}
 				],
 				"configurationSnippets": [

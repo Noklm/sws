@@ -46,5 +46,4 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 
 	remapSourcePathFrom: string;
 	remapSourcePathTo: string;
-	debug: boolean;
 }

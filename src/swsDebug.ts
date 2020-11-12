@@ -178,8 +178,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             self.channel.setLocalService(stream);
             self.channel.setLocalService(tool);
             
-            locator.hello(self.channel.getLocalServices(),
-                (remoteServices: string[]) => {
+            locator.hello(self.channel.getLocalServices(), (remoteServices: string[]) => {
                 // Callback used when we receive the Hello event from atbackend
                 self.channel.setRemoteServices(remoteServices);
                 // runControlService.addListener(this);
@@ -187,11 +186,11 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                     self.channel.setAttachedTools(attachedTools);
                     tool.setupTool(self.channel.getAttachedTool(args.tool));
                 });
-                if (args.debug) {
+                if (!args.noDebug) {
                     stream.setLogBits(0xFFFFFFFF);
                 }
                 
-                });
+            });
             
                 /* Once a device has been instantiated, we need to actually launch with a module */
                 // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
