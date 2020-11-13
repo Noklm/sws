@@ -14,13 +14,19 @@ import {
  * Class that describe the TCF Tool Service
  */
 export class ToolService extends AbstractService<IToolContext, IToolListener>{
+	public attachedTools: Array<ITool>;
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Tool', dispatcher);
+		this.attachedTools = new Array<ITool>();
+		this.dispatcher.eventHandler(this);
 	}
 
-	public attachedTools: Array<ITool> = new Array<ITool>();
-
+	public registerCommands() {
+		super.registerCommands();
+		this._commandEmitter.on('attachedToolsChanged', this.handleAttachedToolsChanged);
+	}
+	
 	/**
 	 * Lists all atbackend supported tools as String
 	 * 
@@ -82,31 +88,17 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 
 	public checkFirmware(contextId: string): Promise<string> {
 		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId]);
+		
 	}
 
-	public eventHandler(event: IEvent): boolean {
-		if (super.eventHandler(event)) {
-			return true;
-		}
-
-		switch (event.command) {
-			case 'attachedToolsChanged':
-				this.handleAttachedToolsChanged(event.args);
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	private handleAttachedToolsChanged(eventData: string[]): void {
+	private handleAttachedToolsChanged = (eventData: string[]): void => {
 		this.attachedTools = <ITool[]>JSON.parse(eventData[0]);
 		this.log(`AttachedToolsChanged: ${eventData}`);
-
 
 		this.listeners.forEach(listener => {
 			listener.attachedToolsChanged(this.attachedTools);
 		});
-	}
+	};
 
 	public fromJson(data: IToolContext): ToolContext {
 		let context = new ToolContext(data, this);

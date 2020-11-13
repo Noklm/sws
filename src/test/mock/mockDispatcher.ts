@@ -60,7 +60,10 @@ export class MockDispatcher implements IDispatcher {
      */
     public mockDecodeEvent(eventName: string, handler: IEventHandler) {
         let data: string[] = new Array<string>(0);
-        data[0] = this.config[eventName];
-        handler.eventHandler(eventName, data);
+        let event = {
+            command: eventName,
+            args: data[0] = this.config[eventName]
+        };
+        handler.eventHandler(event);
     }
 }

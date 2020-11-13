@@ -10,12 +10,16 @@ export class StreamService implements IEventHandler, IService {
 	private name: string;
 
 	public constructor(dispatcher: IDispatcher) {
-		this.dispatcher = dispatcher;
 		this.name = 'Stream';
+		this.dispatcher = dispatcher;
+		this.dispatcher.eventHandler(this);
 	}
 
 	public getName() {
 		return this.name;
+	}
+	
+	public registerCommands() {
 	}
 
 	public setLogBits(level: number): Promise<string> {
@@ -23,11 +27,10 @@ export class StreamService implements IEventHandler, IService {
 		return this.dispatcher.sendCommand(this.name, 'setLogBits', [level]);
 	}
 
-	public eventHandler(event: IEvent): boolean {
+	public eventHandler = (event: IEvent): void => {
 		switch (event) {
 			default:
 				this.dispatcher.log(`[Stream] No matching event handler: ${event.command}`);
-				return false;
 		}
-	}
+	};
 }

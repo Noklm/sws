@@ -2,10 +2,11 @@
 
 export interface IService extends IEventHandler {
 	getName(): string;
+	registerCommands(): void;
 }
 
 export interface IEventHandler {
-	eventHandler(event:IEvent): boolean;
+	eventHandler(event:IEvent): void;
 }
 
 export interface IResponseHandler {
