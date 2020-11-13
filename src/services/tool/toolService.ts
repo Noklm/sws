@@ -26,7 +26,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		super.registerCommands();
 		this._commandEmitter.on('attachedToolsChanged', this.handleAttachedToolsChanged);
 	}
-	
+
 	/**
 	 * Lists all atbackend supported tools as String
 	 * 
@@ -87,7 +87,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	}
 
 	public checkFirmware(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId]);
+		return this.dispatcher.sendCommand(this.getName(), 'checkFirmware', [contextId]);
 		
 	}
 
