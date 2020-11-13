@@ -8,7 +8,7 @@ import { EventEmitter } from 'events';
 
 abstract class AbstractService<TContext extends IContext, TListener extends IContextListener<TContext>> implements IService {
 	private _name: string;
-	public _commandEmitter: EventEmitter;
+	protected _commandEmitter: EventEmitter;
 	protected dispatcher: IDispatcher;
 
 	public contexts: Map<string, TContext> = new Map<string, TContext>();
@@ -18,14 +18,19 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 	public constructor(name: string, dispatcher: IDispatcher) {
 		this._name = name;
 		this._commandEmitter = new EventEmitter();
-
 		this.dispatcher = dispatcher;
 	}
 
+	/**
+	 * As a service we need to get his name
+	 */
 	public getName(): string{
 		return this._name;
 	}
 
+	/**
+	 * All services implement commands, overload this method if more commands are available for the service
+	 */
 	public registerCommands() {
 		this._commandEmitter.on('contextAdded', this.handleContextAdded);
 		this._commandEmitter.on('contextChanged', this.handleContextChanged);
@@ -45,6 +50,24 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 			this.log(`Command ${event.command} unknown`);
 		}
 	};
+
+//----------------------------------------------------------------------
+	// Context
+//----------------------------------------------------------------------
+	
+	public addListener(listener: TListener): void {
+		this.listeners.push(listener);
+	}
+
+	public removeListener(listener: TListener): void {
+		this.listeners = this.listeners.filter((value) => {
+			return value !== listener;
+		});
+	}
+
+	public getContext(id: string): Promise<TContext> {
+		return Promise.resolve(this.contexts.get(id) as TContext);
+	}
 
 	private handleContextAdded = (eventData: string[]): void => {
 		let self = this;
@@ -99,21 +122,6 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 			listener.contextRemoved(ids);
 		});
 	};
-
-
-	public addListener(listener: TListener): void {
-		this.listeners.push(listener);
-	}
-
-	public removeListener(listener: TListener): void {
-		this.listeners = this.listeners.filter( (value) => {
-			return value !== listener;
-		});
-	}
-
-	public getContext(id: string): Promise<TContext> {
-		return Promise.resolve(this.contexts.get(id) as TContext);
-	}
 }
 
 // TODO: Don't export IDispatcher from here...

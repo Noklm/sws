@@ -153,7 +153,6 @@ export class WebsocketDispatcher implements IDispatcher {
 		if (this.ws) {
 			this.ws.send(message);
 		}
-		
 	}
 
 	/**

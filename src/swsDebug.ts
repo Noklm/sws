@@ -1,9 +1,10 @@
-// import { window } from 'vscode';
+import { window } from 'vscode';
 import {
     DebugSession,
     InitializedEvent,
     StoppedEvent,
-    ContinuedEvent
+    ContinuedEvent,
+    TerminatedEvent
 } from 'vscode-debugadapter';
 import { WebsocketDispatcher } from './websocketDispatcher';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -184,7 +185,13 @@ export class SwsDebugSession extends DebugSession /*implements IRunControlListen
                 // runControlService.addListener(this);
                 tool.getAttachedTools().then((attachedTools: ITool[]) => {
                     self.channel.setAttachedTools(attachedTools);
-                    tool.setupTool(self.channel.getAttachedTool(args.tool));
+                    try {
+                        let attachedTool = self.channel.getAttachedTool(args.tool);
+                        tool.setupTool(attachedTool);
+                    } catch (error) {
+                        window.showErrorMessage(error.message);
+                        this.sendEvent(new TerminatedEvent());
+                    }
                 });
                 if (!args.noDebug) {
                     stream.setLogBits(0xFFFFFFFF);
