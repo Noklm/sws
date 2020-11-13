@@ -1,12 +1,12 @@
 'use strict';
 
 import { IService, IEventHandler, IEvent } from './iservice';
-import { IContext, IContextListener, IContextConstructor } from './icontext';
+import { IContext, IContextListener } from './icontext';
 
 import { IDispatcher } from './../idispatcher';
 import { EventEmitter } from 'events';
 
-abstract class AbstractService<TContext extends IContext, TListener extends IContextListener<TContext>> implements IService {
+abstract class AbstractService<TContext extends IContext<any>, TListener extends IContextListener<TContext>> implements IService {
 	private _name: string;
 	protected _commandEmitter: EventEmitter;
 	protected dispatcher: IDispatcher;

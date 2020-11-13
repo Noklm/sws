@@ -13,7 +13,7 @@ import { IDispatcher } from './idispatcher';
 import { LaunchRequestArguments } from './launchRequestArguments';
 // import { IRunControlListener } from './services/runcontrol/irunControlListener';
 import {
-    IToolContext,
+    IToolContext, IToolProperties,
     // IProcessContext,
     // IRegisterContext,
     // IRunControlContext,
@@ -25,7 +25,7 @@ import {
 import {
     LocatorService,
     ToolService,
-    // DeviceService,
+    DeviceService,
     // ProcessService,
     // MemoryService,
     // RegisterService,
@@ -154,7 +154,7 @@ export class SwsDebugSession extends DebugSession /*implements IRunControlListen
      * @param response 
      * @param args 
      */
-    protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
         let self = this;
         // Create the websocket dispatcher to communicate with atbackend
         this.dispatcher = new WebsocketDispatcher(args.atbackendHost, args.atbackendPort,
@@ -170,59 +170,48 @@ export class SwsDebugSession extends DebugSession /*implements IRunControlListen
             // Initiate the TCF channel after that websocket connection is opened
             let locator = new LocatorService(dispatcher);
             let tool = new ToolService(dispatcher);
-            // let device = new DeviceService(dispatcher);
+            let device = new DeviceService(dispatcher);
             let stream = new StreamService(dispatcher);
 
             // Ordre AZ
-            // self.channel.setLocalService(device);
+            self.channel.setLocalService(device);
             self.channel.setLocalService(locator);
             self.channel.setLocalService(stream);
             self.channel.setLocalService(tool);
-            
-            locator.hello(self.channel.getLocalServices(), (remoteServices: string[]) => {
+
+            locator.hello(self.channel.getLocalServices(), async (remoteServices: string[]) => {
                 // Callback used when we receive the Hello event from atbackend
                 self.channel.setRemoteServices(remoteServices);
                 // runControlService.addListener(this);
-                tool.getAttachedTools().then((attachedTools: ITool[]) => {
-                    self.channel.setAttachedTools(attachedTools);
-                    try {
-                        let attachedTool = self.channel.getAttachedTool(args.tool);
-                        tool.setupTool(attachedTool);
-                    } catch (error) {
-                        window.showErrorMessage(error.message);
-                        this.sendEvent(new TerminatedEvent());
-                    }
-                });
-                if (!args.noDebug) {
-                    stream.setLogBits(0xFFFFFFFF);
-                }
-                
-            });
-            
-                /* Once a device has been instantiated, we need to actually launch with a module */
-                // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
-                // toolService.getSupportedToolTypes().then((supportedTools: string[]) => {
-                //     supportedTools.forEach(
-                //         (supportedTool: string) => {
-                //             console.log(`${supportedTool}`);
-                //         });
-                // });
-                /* Ignition! TODO: need more properties for USB/IP tools */
-                // toolService.setupTool(args.tool, args.toolConnection, args.connectionProperties).then((tool: IToolContext) => {
-                //     tool.setProperties({
-                //         'DeviceName': args.device,
-                //         'PackPath': args.packPath,
-                //         'InterfaceName': args.interface,
-                //         'InterfaceProperties': args.interfaceProperties
-                //     }).catch((reason: Error) => {
-                //         throw reason;
-                //     });
-                // }).catch((reason: Error) => {
+                let attachedTools = await tool.getAttachedTools();
 
-                // });
+                try {
+                    self.channel.setAttachedTools(attachedTools);
+                    let attachedTool = self.channel.getAttachedTool(args.tool);
+                    let toolContext: IToolContext = await tool.setupTool(attachedTool);
+                    await tool.connect(toolContext.ID);
+                    await tool.checkFirmware(toolContext.ID);
+                    let properties: IToolProperties = {
+                        InterfaceName: args.interface,
+                        PackPath: args.packPath,
+                        DeviceName: args.device,
+                        InterfaceProperties: args.interfaceProperties
+                    };
+                    await tool.setProperties(toolContext.ID, properties);
+                } catch (error) {
+                    window.showErrorMessage(error.message);
+                    this.sendEvent(new TerminatedEvent());
+                }
+
+            });
+            if (!args.noDebug) {
+                stream.setLogBits(0xFFFFFFFF);
+            }
 
         });
-        // });
+            
+        /* Once a device has been instantiated, we need to actually launch with a module */
+        // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
         this.sendResponse(response);
         
     }

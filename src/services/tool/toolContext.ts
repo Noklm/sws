@@ -5,25 +5,37 @@ import { ToolService } from './toolService';
 
 export class ToolContext implements IToolContext {
 
-	public ID: string;
-	public Name: string;
 	public service: ToolService;
 
-	public DeviceId: string;
+	public ID: string;
+	public Name: string;
+	public DeviceId?: string;
+	public InterfaceName?: string;
+	public InterfaceProperties?: any;
+	public HardwareRevision?: number;
+	public FirmwareBuildNumber?: number;
+	public Chipset?: number;
+	public CanDoUpdiHvActivation?: boolean;
 	public MajorFirmwareVersionOnDisk: number;
 	public MinorFirmwareVersionOnDisk: number;
 	public CanEraseXmegaPages: number;
 
-	public properties: any;
+	// public properties: any;
 
-	public constructor(data:IToolContext, service:ToolService) {
+	public constructor(data: IToolContext, service: ToolService) {
+		this.service = service;
 		this.ID = data.ID;
 		this.Name = data.Name;
 		this.DeviceId = data.DeviceId;
+		this.InterfaceName = data.InterfaceName;
+		this.InterfaceProperties = data.InterfaceProperties;
+		this.HardwareRevision = data.HardwareRevision;
+		this.FirmwareBuildNumber = data.FirmwareBuildNumber;
+		this.Chipset = data.Chipset;
+		this.CanDoUpdiHvActivation= data.CanDoUpdiHvActivation;
 		this.MajorFirmwareVersionOnDisk = data.MajorFirmwareVersionOnDisk;
 		this.MinorFirmwareVersionOnDisk = data.MinorFirmwareVersionOnDisk;
 		this.CanEraseXmegaPages = data.CanEraseXmegaPages;
-		this.service = service;
 	}
 
 	public setProperties(properties: any): Promise<any> {

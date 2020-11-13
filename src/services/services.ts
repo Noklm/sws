@@ -1,7 +1,7 @@
 'use strict';
 
 // export * from './breakpoint/breakpointService';
-// export * from './device/deviceService';
+export * from './device/deviceService';
 // export * from './expression/expressionService';
 // export * from './linenumber/lineNumberService';
 export * from './locator/locatorService';
