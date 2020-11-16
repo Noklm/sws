@@ -39,6 +39,8 @@ import {
 import { NumericalHashCode } from './numericalHashCode';
 import { Channel } from './channel/channel';
 import { ProcessLauncher } from './processLauncher';
+import { ProgressReporter } from './progressReporter';
+
 /**
  * Creates a new debug adapter that is used for one debug session.
  * We configure the default implementation of a debug adapter here.
@@ -171,7 +173,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             (message: string) => {
                 console.log(message);
             });
-
+        this.dispatcher.progressHandler(new ProgressReporter());
         // Connects to AtBackend
         this.dispatcher.connect((dispatcher: IDispatcher) => {
             // Initiate the TCF channel after that websocket connection is opened
