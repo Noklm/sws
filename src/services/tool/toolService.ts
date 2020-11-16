@@ -37,7 +37,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 
 		// TODO: Look how to catch rejected response
 		return new Promise<string[]>(function(resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'getSupportedToolTypes', []).then( (data: string) => {
+			self.dispatcher.sendCommand(self._name, 'getSupportedToolTypes', []).then( (data: string) => {
 				let supportedTools = <string[]>JSON.parse(data);
 				resolve(supportedTools);
 			}).catch(reject);
@@ -45,7 +45,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	}
 
 	public pollForTools(shouldPoll: boolean) {
-		this.dispatcher.sendCommand(this.getName(), 'pollForTools', [shouldPoll]);
+		this.dispatcher.sendCommand(this._name, 'pollForTools', [shouldPoll]);
 	}
 
 	/**
@@ -56,7 +56,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	public getAttachedTools(): Promise<ITool[]> {
 		let self = this;
 		return new Promise<ITool[]>(function (resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'getAttachedTools', [""]).then((data: string) => {
+			self.dispatcher.sendCommand(self._name, 'getAttachedTools', [""]).then((data: string) => {
 				let attachedTools:ITool[] = JSON.parse(data);
 				resolve(attachedTools);
 			}).catch(reject);
@@ -67,7 +67,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		let self = this;
 
 		return new Promise<IToolContext>(function(resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'setupTool', [tool.ToolType, tool.ConnectionType, tool.ConnectionProperties]).then( (data: string) => {
+			self.dispatcher.sendCommand(self._name, 'setupTool', [tool.ToolType, tool.ConnectionType, tool.ConnectionProperties]).then( (data: string) => {
 				let context = JSON.parse(data);
 				self.getContext(context).then(resolve).catch(reject);
 			}).catch(reject);
@@ -75,17 +75,17 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	}
 
 	public connect(id: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'connect', [id]);
+		return this.dispatcher.sendCommand(this._name, 'connect', [id]);
 	}
 
 	public tearDownTool(id: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'tearDownTool', [id]);
+		return this.dispatcher.sendCommand(this._name, 'tearDownTool', [id]);
 	}
 
 
 
 	public checkFirmware(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'checkFirmware', [contextId]);
+		return this.dispatcher.sendCommand(this._name, 'checkFirmware', [contextId]);
 		
 	}
 
@@ -105,7 +105,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	 * @param properties Properties to set
 	 */
 	public setProperties(contextId: string, properties: any): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
+		return this.dispatcher.sendCommand(this._name, 'setProperties', [contextId, properties]);
 	}
 
 	public getProperties(): Promise<any> {
