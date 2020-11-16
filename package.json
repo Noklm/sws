@@ -154,7 +154,7 @@
 							"program": {
 								"type": "string",
 								"description": "Absolute path to a elf file.",
-								"default": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf"
+								"default": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf"
 							},
 							"atbackendHost": {
 								"type": "string",
@@ -274,7 +274,7 @@
 						"name": "Sws Debug",
 						"atbackendHost": "127.0.0.1",
 						"atbackendPort": 4710,
-						"program": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf",
+						"program": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf",
 						"tool": "atmelice",
 						"device": "attiny817",
 						"interface": "UPDI",
