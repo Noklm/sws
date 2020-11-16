@@ -7,7 +7,7 @@ import { IDispatcher } from './../idispatcher';
 import { EventEmitter } from 'events';
 
 abstract class AbstractService<TContext extends IContext, TListener extends IContextListener<TContext>> implements IService {
-	private _name: string;
+	protected _name: string;
 	protected _commandEmitter: EventEmitter; // One service handle commands on events
 	protected dispatcher: IDispatcher;
 
@@ -50,7 +50,7 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 			this.log(`Command ${event.command} unknown`);
 		}
 	};
-	
+
 	abstract fromJson(data: TContext): TContext;
 	abstract setProperties(contextId: string, properties: TContext): Promise<string>;
 	abstract getProperties(contextId: string): Promise<TContext>;
