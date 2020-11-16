@@ -11,12 +11,12 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { IService } from './services/iservice';
 import { IDispatcher } from './idispatcher';
 import { LaunchRequestArguments } from './launchRequestArguments';
-// import { IRunControlListener } from './services/runcontrol/irunControlListener';
+import { IRunControlListener } from './services/runcontrol/irunControlListener';
 import {
     IToolContext, IToolProperties,
     // IProcessContext,
     // IRegisterContext,
-    // IRunControlContext,
+    IRunControlContext,
 } from './services/contexts';
 import {
     IConnectionProperties,
@@ -34,7 +34,7 @@ import {
     // StackTraceService,
     StreamService,
     // BreakpointsService,
-    // RunControlService
+    RunControlService
 } from './services/services';
 import { NumericalHashCode } from './numericalHashCode';
 import { Channel } from './channel/channel';
@@ -42,7 +42,7 @@ import { Channel } from './channel/channel';
  * Creates a new debug adapter that is used for one debug session.
  * We configure the default implementation of a debug adapter here.
  */
-export class SwsDebugSession extends DebugSession /*implements IRunControlListener*/{
+export class SwsDebugSession extends DebugSession implements IRunControlListener{
 
     private dispatcher?: IDispatcher;
     private channel: Channel;
@@ -53,6 +53,12 @@ export class SwsDebugSession extends DebugSession /*implements IRunControlListen
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
         this.channel = new Channel();
+    }
+    contextAdded(contexts: IRunControlContext[]): void {
+        throw new Error('Method not implemented.');
+    }
+    contextChanged(contexts: IRunControlContext[]): void {
+        throw new Error('Method not implemented.');
     }
     /* IRunControlListener */
     public contextSuspended(contextId: string, pc: number, reason: string, state: any): void {
@@ -172,12 +178,15 @@ export class SwsDebugSession extends DebugSession /*implements IRunControlListen
             let tool = new ToolService(dispatcher);
             let device = new DeviceService(dispatcher);
             let stream = new StreamService(dispatcher);
+            let runControl = new RunControlService(dispatcher);
 
             // Ordre AZ
             self.channel.setLocalService(device);
             self.channel.setLocalService(locator);
+            self.channel.setLocalService(runControl);
             self.channel.setLocalService(stream);
             self.channel.setLocalService(tool);
+
 
             locator.hello(self.channel.getLocalServices(), async (remoteServices: string[]) => {
                 // Callback used when we receive the Hello event from atbackend
@@ -198,6 +207,7 @@ export class SwsDebugSession extends DebugSession /*implements IRunControlListen
                         InterfaceProperties: args.interfaceProperties
                     };
                     await tool.setProperties(toolContext.ID, properties);
+                    runControl.addListener(self);
                 } catch (error) {
                     window.showErrorMessage(error.message);
                     this.sendEvent(new TerminatedEvent());
