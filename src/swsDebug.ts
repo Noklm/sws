@@ -14,7 +14,7 @@ import { LaunchRequestArguments } from './launchRequestArguments';
 import { IRunControlListener } from './services/runcontrol/irunControlListener';
 import {
     IToolContext, IToolProperties,
-    // IProcessContext,
+    IProcessContext,
     // IRegisterContext,
     IRunControlContext,
 } from './services/contexts';
@@ -26,7 +26,7 @@ import {
     LocatorService,
     ToolService,
     DeviceService,
-    // ProcessService,
+    ProcessService,
     // MemoryService,
     // RegisterService,
     // ExpressionService,
@@ -38,6 +38,7 @@ import {
 } from './services/services';
 import { NumericalHashCode } from './numericalHashCode';
 import { Channel } from './channel/channel';
+import { ProcessLauncher } from './processLauncher';
 /**
  * Creates a new debug adapter that is used for one debug session.
  * We configure the default implementation of a debug adapter here.
@@ -77,9 +78,9 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     public contextStateChanged(contextIds: string[]): void { }
 
     /**
-         * The 'initialize' request is the first request called by the frontend
-         * to interrogate the features the debug adapter provides.
-         */
+     * The 'initialize' request is the first request called by the frontend
+     * to interrogate the features the debug adapter provides.
+     */
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
 
         // build and return the capabilities of this debug adapter:
@@ -130,14 +131,14 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         super.disconnectRequest(response, args);
 
         /* Terminate the processes */
-        // try {
-        //     let processService = <ProcessService>this.channel.getLocalService('Processes');
-        //     processService.contexts.forEach(context => {
-        //         context.terminate();
-        //     });
-        // } catch (e) {
-        //     console.error(e);
-        // }
+        try {
+            let processService = this.channel.getService<ProcessService>('Processes');
+            processService.contexts.forEach(context => {
+                context.terminate();
+            });
+        } catch (e) {
+            console.error(e);
+        }
 
         /* Tear down the tools */
         try {
@@ -179,10 +180,12 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             let device = new DeviceService(dispatcher);
             let stream = new StreamService(dispatcher);
             let runControl = new RunControlService(dispatcher);
+            let processes = new ProcessService(dispatcher);
 
             // Ordre AZ
             self.channel.setLocalService(device);
             self.channel.setLocalService(locator);
+            self.channel.setLocalService(processes);
             self.channel.setLocalService(runControl);
             self.channel.setLocalService(stream);
             self.channel.setLocalService(tool);
@@ -193,7 +196,8 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                 self.channel.setRemoteServices(remoteServices);
                 // runControlService.addListener(this);
                 let attachedTools = await tool.getAttachedTools();
-
+                /* Once a device has been instantiated, we need to actually launch with a module */
+                device.addListener(new ProcessLauncher(args.program, processes, args));
                 try {
                     self.channel.setAttachedTools(attachedTools);
                     let attachedTool = self.channel.getAttachedTool(args.tool);
