@@ -1,9 +1,8 @@
 'use strict';
 
 import { IContext } from './../icontext';
-import { DeviceService } from './deviceService';
 
-export interface IDeviceContext extends IContext<DeviceService> {
+export interface IDeviceContext extends IContext {
     Name: string,
     Session: number,
     MemoryIDs?: Array<string>,

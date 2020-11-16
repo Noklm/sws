@@ -38,14 +38,6 @@ export class ToolContext implements IToolContext {
 		this.CanEraseXmegaPages = data.CanEraseXmegaPages;
 	}
 
-	public setProperties(properties: any): Promise<any> {
-		return this.service.setProperties(this.ID, properties);
-	}
-
-	public getProperties(): Promise<any> {
-		return Promise.reject(Error('NOT IMPLEMENTED'));
-	}
-
 	public connect() {
 		this.service.connect(this.ID);
 	}

@@ -179,10 +179,15 @@
 							"interface": {
 								"type": "string",
 								"description": "The debug interface used",
+								"enum": [
+									"UPDI",
+									"JTAG",
+									"SWD"
+								],
 								"default": "UPDI"
 							},
 							"interfaceProperties": {
-								"type": "any",
+								"type": "InterfaceType",
 								"description": "",
 								"default": {
 									"UpdiClock": 2000000,

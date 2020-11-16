@@ -1,9 +1,9 @@
 'use strict';
 
-import { IContext } from './../icontext';
-import { ToolService } from './toolService';
+import { IContext, IProperties } from './../icontext';
+import { InterfaceType, InterfaceNameType } from './iprogInterface';
 
-export interface IToolContext extends IContext<ToolService> {
+export interface IToolContext extends IContext {
 	Name: string;
 	DeviceId?: string;
 	InterfaceName?: string;
@@ -22,40 +22,10 @@ export interface IToolContext extends IContext<ToolService> {
 	connect(): void;
 	tearDownTool(): void;
 }
-export interface IToolProperties extends IInterfaceProperties {
-	InterfaceName: string;
+
+export interface IToolProperties extends IProperties {
+	InterfaceName: InterfaceNameType;
 	DeviceName: string;
 	PackPath: string;
-}
-
-/**
- * Interface that structure the interface properties for UPDI, JTAG, SWD ...
- */
-export interface IInterfaceProperties {
-	InterfaceProperties?: IUpdi | IJtag | ISwd;
-}
-
-/**
- * Interface that describes the UPDI interface
- */
-export interface IUpdi extends IKeepTimersRunning{
-	UpdiClock: number;
-}
-
-/**
- * Interface that describes the JTAG interface
- */
-export interface IJtag extends IKeepTimersRunning{
-	JtagClock: number;
-}
-
-/**
- * Interface that describes a Tool object from the tool TCF service
- */
-export interface ISwd extends IKeepTimersRunning{
-	SwdClock: number;
-}
-
-export interface IKeepTimersRunning {
-	KeepTimersRunning: boolean;
+	InterfaceProperties?: InterfaceType;
 }

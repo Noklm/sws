@@ -12,7 +12,7 @@ export class DeviceContext implements IDeviceContext {
 	public MemoryIDs?: Array<string>;
 	public RunControlID?: string;
 
-	public properties: any;
+	// public properties: any;
 	public constructor(data: IDeviceContext, service: DeviceService) {
 		this.service = service;
 		this.ID = data.ID;
@@ -20,14 +20,6 @@ export class DeviceContext implements IDeviceContext {
 		this.Session = data.Session;
 		this.MemoryIDs = data.MemoryIDs;
 		this.RunControlID = data.RunControlID;
-	}
-
-	public setProperties(properties: any): Promise<any> {
-		return this.service.setProperties(this.ID, properties);
-	}
-
-	public getProperties(): Promise<any> {
-		return this.service.getProperties(this.ID);
 	}
 
 	public toString(): string {

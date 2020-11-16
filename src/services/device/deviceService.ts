@@ -16,8 +16,15 @@ export class DeviceService extends AbstractService<IDeviceContext, IDeviceListen
 		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
 	}
 
-	public getProperties(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'getProperties', [contextId]); // TODO; marshal into Context
+	public getProperties(contextId: string): Promise<IDeviceContext> {
+		let self = this;
+
+		return new Promise<IDeviceContext>(function (resolve, reject) {
+			self.dispatcher.sendCommand(self.getName(), 'getProperties', [contextId]).then((eventData: string) => {
+				let data = JSON.parse(eventData);
+				resolve(new DeviceContext(data, self));
+			}).catch(reject);
+		});
 	}
 
 	public fromJson(data: IDeviceContext): IDeviceContext {

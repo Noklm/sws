@@ -82,9 +82,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		return this.dispatcher.sendCommand(this.getName(), 'tearDownTool', [id]);
 	}
 
-	public setProperties(contextId: string, properties: any): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
-	}
+
 
 	public checkFirmware(contextId: string): Promise<string> {
 		return this.dispatcher.sendCommand(this.getName(), 'checkFirmware', [contextId]);
@@ -99,6 +97,20 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 			listener.attachedToolsChanged(this.attachedTools);
 		});
 	};
+
+
+	/**
+	 * 
+	 * @param contextId Tool Context ID
+	 * @param properties Properties to set
+	 */
+	public setProperties(contextId: string, properties: any): Promise<string> {
+		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
+	}
+
+	public getProperties(): Promise<any> {
+		return Promise.reject(Error('NOT IMPLEMENTED'));
+	}
 
 	public fromJson(data: IToolContext): ToolContext {
 		let context = new ToolContext(data, this);

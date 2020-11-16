@@ -1,21 +1,19 @@
 
 'use strict';
-import { IService } from './iservice';
-
-export interface IContext<TService extends IService> {
+export interface IContext {
 	ID: string;
-	service?: TService;
-	setProperties(properties: any): Promise<any>;
-	getProperties(): Promise<any>;
 }
 
 
-export interface IContextListener<TContext extends IContext<any>> {
+export interface IContextListener<TContext extends IContext> {
 	contextAdded(contexts: TContext[]): void;
 	contextChanged(contexts: TContext[]): void;
 	contextRemoved(contextIds: string[]): void;
 }
 
+export interface IProperties{
+	
+}
 // export interface IContextConstructor<TContext extends IContext> {
 // 	new(data: TContext): TContext;
 // }

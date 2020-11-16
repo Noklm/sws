@@ -6,19 +6,21 @@ import { IContext, IContextListener } from './icontext';
 import { IDispatcher } from './../idispatcher';
 import { EventEmitter } from 'events';
 
-abstract class AbstractService<TContext extends IContext<any>, TListener extends IContextListener<TContext>> implements IService {
+abstract class AbstractService<TContext extends IContext, TListener extends IContextListener<TContext>> implements IService {
 	private _name: string;
-	protected _commandEmitter: EventEmitter;
+	protected _commandEmitter: EventEmitter; // One service handle commands on events
 	protected dispatcher: IDispatcher;
 
-	public contexts: Map<string, TContext> = new Map<string, TContext>();
-	protected listeners: Array<TListener> = new  Array<TListener>();
+	public contexts: Map<string, TContext>;	// One service can have one or more contexts
+	protected listeners: Array<TListener>; // One service can have on or more listeners
 
 
 	public constructor(name: string, dispatcher: IDispatcher) {
 		this._name = name;
 		this._commandEmitter = new EventEmitter();
 		this.dispatcher = dispatcher;
+		this.contexts = new Map<string, TContext>();
+		this.listeners = new Array<TListener>();
 	}
 
 	/**
@@ -41,8 +43,6 @@ abstract class AbstractService<TContext extends IContext<any>, TListener extends
 		this.dispatcher.log(`[${this._name}] ${message}`);
 	}
 
-	abstract fromJson(data: TContext): TContext;
-
 	public eventHandler = (event: IEvent): void => {
 		if (this._commandEmitter.emit(event.command, event.args)) {
 			this.log(`Command ${event.command} done`);
@@ -50,6 +50,10 @@ abstract class AbstractService<TContext extends IContext<any>, TListener extends
 			this.log(`Command ${event.command} unknown`);
 		}
 	};
+	
+	abstract fromJson(data: TContext): TContext;
+	abstract setProperties(contextId: string, properties: TContext): Promise<string>;
+	abstract getProperties(contextId: string): Promise<TContext>;
 
 //----------------------------------------------------------------------
 	// Context
