@@ -1,9 +1,8 @@
-
 'use strict';
+
 export interface IContext {
 	ID: string;
 }
-
 
 export interface IContextListener<TContext extends IContext> {
 	contextAdded(contexts: TContext[]): void;
@@ -12,8 +11,5 @@ export interface IContextListener<TContext extends IContext> {
 }
 
 export interface IProperties{
-	
+
 }
-// export interface IContextConstructor<TContext extends IContext> {
-// 	new(data: TContext): TContext;
-// }
