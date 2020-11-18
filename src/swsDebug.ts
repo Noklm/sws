@@ -58,10 +58,10 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         this.channel = new Channel();
     }
     contextAdded(contexts: IRunControlContext[]): void {
-        throw new Error('Method not implemented.');
+        // throw new Error('Method not implemented.');
     }
     contextChanged(contexts: IRunControlContext[]): void {
-        throw new Error('Method not implemented.');
+        // throw new Error('Method not implemented.');
     }
     /* IRunControlListener */
     public contextSuspended(contextId: string, pc: number, reason: string, state: any): void {
@@ -200,6 +200,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                 let attachedTools = await tool.getAttachedTools();
                 /* Once a device has been instantiated, we need to actually launch with a module */
                 device.addListener(new ProcessLauncher(args.program, processes, args));
+                runControl.addListener(self);
                 try {
                     self.channel.setAttachedTools(attachedTools);
                     let attachedTool = self.channel.getAttachedTool(args.tool);
@@ -213,7 +214,8 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                         InterfaceProperties: args.interfaceProperties
                     };
                     await tool.setProperties(toolContext.ID, properties);
-                    runControl.addListener(self);
+                    
+                    
                 } catch (error) {
                     window.showErrorMessage(error.message);
                     this.sendEvent(new TerminatedEvent());
