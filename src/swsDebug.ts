@@ -27,7 +27,7 @@ import {
     ToolService,
     DeviceService,
     ProcessService,
-    // MemoryService,
+    MemoryService,
     // RegisterService,
     // ExpressionService,
     // LineNumberService,
@@ -183,10 +183,12 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             let stream = new StreamService(dispatcher);
             let runControl = new RunControlService(dispatcher);
             let processes = new ProcessService(dispatcher);
+            let memory = new MemoryService(dispatcher);
 
             // Ordre AZ
             self.channel.setLocalService(device);
             self.channel.setLocalService(locator);
+            self.channel.setLocalService(memory);
             self.channel.setLocalService(processes);
             self.channel.setLocalService(runControl);
             self.channel.setLocalService(stream);
