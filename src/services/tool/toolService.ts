@@ -2,9 +2,7 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IToolContext } from './itoolContext';
-import { ToolContext} from './toolContext';
 import { IToolListener } from './itoolListener';
-import { IEvent } from './../iservice';
 import {
 	IConnectionProperties,
 	ITool
@@ -82,8 +80,6 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		return this.dispatcher.sendCommand(this._name, 'tearDownTool', [id]);
 	}
 
-
-
 	public checkFirmware(contextId: string): Promise<string> {
 		return this.dispatcher.sendCommand(this._name, 'checkFirmware', [contextId]);
 		
@@ -110,10 +106,5 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 
 	public getProperties(): Promise<any> {
 		return Promise.reject(Error('NOT IMPLEMENTED'));
-	}
-
-	public fromJson(data: IToolContext): ToolContext {
-		let context = new ToolContext(data, this);
-		return context;
 	}
 }

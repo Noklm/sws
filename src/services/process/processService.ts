@@ -4,7 +4,6 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IProcessContext } from './iprocessContext';
-import { ProcessContext } from './processContext';
 import { IProcessListener } from './iprocessListener';
 import { IDeviceContext } from './../device/ideviceContext';
 
@@ -48,10 +47,4 @@ export class ProcessService extends AbstractService<IProcessContext, IProcessLis
 	public getProperties(): Promise<any> {
 		return Promise.reject(Error('NOT IMPLEMENTED'));
 	}
-
-	public fromJson(data: IProcessContext): IProcessContext {
-		let context = new ProcessContext(data, this);
-		return context;
-	}
-
 }

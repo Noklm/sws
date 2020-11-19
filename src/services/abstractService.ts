@@ -50,8 +50,6 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 			this.log(`Command ${event.command} unknown`);
 		}
 	};
-
-	abstract fromJson(data: TContext): TContext;
 	abstract setProperties(contextId: string, properties: TContext): Promise<string>;
 	abstract getProperties(contextId: string): Promise<TContext>;
 
@@ -80,12 +78,12 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		let newContexts = new Array<TContext>();
 
 		contextsData.forEach(contextData => {
-			let context = self.fromJson(contextData);
-			this.contexts.set(context.ID, context);
-			newContexts.push(context);
+			this.contexts.set(contextData.ID, contextData);
+			newContexts.push(contextData);
+			this.log(`ContextAdded: ${contextData.ID}`);
 		});
 
-		this.log(`ContextAdded: ${newContexts}`);
+		
 
 		this.listeners.forEach(listener => {
 			listener.contextAdded(newContexts);
@@ -99,12 +97,12 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		let newContexts = new Array<TContext>();
 
 		contextsData.forEach(contextData => {
-			let context = self.fromJson(contextData);
-			this.contexts.set(context.ID, context);
-			newContexts.push(context);
+			this.contexts.set(contextData.ID, contextData);
+			newContexts.push(contextData);
+			this.log(`ContextChanged: ${contextData.ID}`);
 		});
 
-		this.log(`ContextChanged: ${newContexts}`);
+		
 
 		this.listeners.forEach(listener => {
 			listener.contextChanged(newContexts);

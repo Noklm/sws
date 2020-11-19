@@ -136,7 +136,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         try {
             let processService = this.channel.getService<ProcessService>('Processes');
             processService.contexts.forEach(context => {
-                context.terminate();
+                processService.terminate(context.ID);
             });
         } catch (e) {
             console.error(e);
@@ -146,7 +146,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         try {
             let toolService = this.channel.getService<ToolService>('Tool');
             toolService.contexts.forEach(context => {
-                context.tearDownTool();
+                toolService.tearDownTool(context.ID);
             });
         } catch (e) {
             console.error(e);

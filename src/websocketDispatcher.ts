@@ -295,7 +295,7 @@ export class WebsocketDispatcher implements IDispatcher {
 			handler.progress(+eventData['ProgressComplete'], +eventData['ProgressTotal'], eventData['Description']);
 		});
 
-		this.log(`[Dispatcher] Progress: ${eventData}`);
+		this.log(`[Dispatcher] Progress: ${eventData['ProgressComplete']}`);
 	}
 
 	/**

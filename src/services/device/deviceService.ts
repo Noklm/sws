@@ -3,7 +3,6 @@
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IDeviceContext } from './ideviceContext';
 import { IDeviceListener } from './ideviceListener';
-import { DeviceContext } from './deviceContext';
 
 export class DeviceService extends AbstractService<IDeviceContext, IDeviceListener> {
 
@@ -22,13 +21,8 @@ export class DeviceService extends AbstractService<IDeviceContext, IDeviceListen
 		return new Promise<IDeviceContext>(function (resolve, reject) {
 			self.dispatcher.sendCommand(self._name, 'getProperties', [contextId]).then((eventData: string) => {
 				let data = JSON.parse(eventData);
-				resolve(new DeviceContext(data, self));
+				resolve(data);
 			}).catch(reject);
 		});
-	}
-
-	public fromJson(data: IDeviceContext): IDeviceContext {
-		let context = new DeviceContext(data, this);
-		return context;
 	}
 }

@@ -4,7 +4,6 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IRunControlContext } from './irunControlContext';
-import { RunControlContext } from './runControlContext';
 import { IRunControlListener } from './irunControlListener';
 import { ResumeMode } from './resumeMode';
 
@@ -63,11 +62,6 @@ export class RunControlService extends AbstractService<IRunControlContext, IRunC
 			listener.contextResumed(id);
 		});
 	};
-
-	public fromJson(data: IRunControlContext): IRunControlContext {
-		let context = new RunControlContext(data, this);
-		return context;
-	}
 
 	public setProperties(contextId: string, properties: any): Promise<string> {
 		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);

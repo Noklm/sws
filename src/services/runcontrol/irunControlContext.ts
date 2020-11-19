@@ -23,11 +23,5 @@ export interface IRunControlContext extends IContext {
 	"wr-running" - context supports writing registers, clients are not required to stop the context for register access
 	"rd-stop" - context supports reading registers, clients should stop the context for register access
 	"wr-stop" - context supports writing registers, clients should stop the context for register access*/
-	RegAccessTypes?: Array<string>; 
-
-
-	resume(mode: ResumeMode, count?: number): Promise<any>;
-	suspend(): Promise<any>;
-	terminate(): Promise<any>;
-	detach(): Promise<any>;
+	RegAccessTypes?: Array<string>;
 }
