@@ -16,7 +16,7 @@ interface IJtag extends IKeepTimersRunning {
 }
 
 /**
- * Interface that describes a Tool object from the tool TCF service
+ * Interface that describes the SWD interface
  */
 interface ISwd extends IKeepTimersRunning {
     SwdClock: number;
