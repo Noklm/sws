@@ -1,7 +1,7 @@
 'use strict';
 
 export interface IContext {
-	ID: string;
+	ID: string;  // ID of the context
 }
 
 export interface IContextListener<TContext extends IContext> {
