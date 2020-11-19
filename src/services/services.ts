@@ -7,7 +7,7 @@ export * from './device/deviceService';
 export * from './locator/locatorService';
 export * from './process/processService';
 export * from './memory/memoryService';
-// export * from './register/registerService';
+export * from './register/registerService';
 export * from './runcontrol/runControlService';
 // export * from './stacktrace/stackTraceService';
 export * from './stream/streamService';
