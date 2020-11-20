@@ -35,7 +35,8 @@ import {
     StreamService,
     // BreakpointsService,
     RunControlService,
-    RegisterService
+    RegisterService,
+    StackTraceService
 } from './services/services';
 import { NumericalHashCode } from './numericalHashCode';
 import { Channel } from './channel/channel';
@@ -186,6 +187,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             let processes = new ProcessService(dispatcher);
             let memory = new MemoryService(dispatcher);
             let registers = new RegisterService(dispatcher);
+            let stackTrace = new StackTraceService(dispatcher);
 
             // Ordre AZ
             self.channel.setLocalService(device);
@@ -194,6 +196,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             self.channel.setLocalService(processes);
             self.channel.setLocalService(registers);
             self.channel.setLocalService(runControl);
+            self.channel.setLocalService(stackTrace);
             self.channel.setLocalService(stream);
             self.channel.setLocalService(tool);
 

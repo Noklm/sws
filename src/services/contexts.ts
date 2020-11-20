@@ -8,5 +8,5 @@ export * from './memory/imemoryContext';
 export * from './process/iprocessContext';
 export * from './register/iregisterContext';
 export * from './runcontrol/irunControlContext';
-// export * from './stacktrace/istackTraceContext';
+export * from './stacktrace/istackTraceContext';
 export * from './tool/itoolContext';
