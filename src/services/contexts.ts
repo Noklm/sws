@@ -2,7 +2,7 @@
 
 // export * from './breakpoint/ibreakpointContext';
 export * from './device/ideviceContext';
-// export * from './expression/iexpressionContext';
+export * from './expression/iexpressionContext';
 // export * from './linenumber/ilineNumberContext';
 export * from './memory/imemoryContext';
 export * from './process/iprocessContext';
