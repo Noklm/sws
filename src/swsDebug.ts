@@ -90,6 +90,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
         // the adapter implements the configurationDoneRequest.
         response.body.supportsConfigurationDoneRequest = true;
+        args.supportsProgressReporting = true;
 
         // make VS Code to use 'evaluate' when hovering over source
         // response.body.supportsEvaluateForHovers = true;
@@ -173,7 +174,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             (message: string) => {
                 console.log(message);
             });
-        this.dispatcher.progressHandler(new ProgressReporter());
+        this.dispatcher.progressHandler(new ProgressReporter('Launcher',this));
         // Connects to AtBackend
         this.dispatcher.connect((dispatcher: IDispatcher) => {
             // Initiate the TCF channel after that websocket connection is opened
