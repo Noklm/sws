@@ -15,15 +15,10 @@ export class StackTraceService extends AbstractService<IStackTraceContext, IStac
 		this.dispatcher.eventHandler(this);
 	}
 
-	public getChildren(parentContext: string): Promise<IStackTraceContext[]> {
-		let self = this;
-
-		return new Promise<IStackTraceContext[]>(function(resolve, reject) {
-			self.dispatcher.sendCommand(self._name, 'getChildren', [parentContext]).then( (data: string) => {
-				let contextIds = <string[]>JSON.parse(data);
-				self.getContexts(contextIds).then(resolve).catch(reject);
-			}).catch(reject);
-		});
+	public async getChildren(parentContext: string): Promise<IStackTraceContext[]> {
+		let data = await this.dispatcher.sendCommand(this._name, 'getChildren', [parentContext]);
+		let contextIds = <string[]>JSON.parse(data);
+		return this.getContexts(contextIds);
 	}
 
 	public getContext(contextId: string): Promise<IStackTraceContext> {
@@ -36,17 +31,18 @@ export class StackTraceService extends AbstractService<IStackTraceContext, IStac
 	}
 
 
-	public getContexts(externalContexts: Array<IStackTraceContext> | string[]): Promise<IStackTraceContext[]> {
+	public getContexts(externalContexts: string[]): Promise<IStackTraceContext[]> {
 		let self = this;
 		let ids: string[];
-		externalContexts.forEach((context:any) => {
-			if ("ID" in context) {
-				ids.push(context.ID);
-			} else {
-				ids.push(context);
-			}
+		ids = externalContexts;
+		// externalContexts.forEach((context:any) => {
+		// 	if ("ID" in context) {
+		// 		ids.push(context.ID);
+		// 	} else {
+		// 		ids.push(context);
+		// 	}
 			
-		});
+		// });
 		return new Promise<IStackTraceContext[]>(function(resolve, reject) {
 			self.dispatcher.sendCommand(self._name, 'getContext', [ids]).then( (data: string) => {
 				let contextsData = <IStackTraceContext[]>JSON.parse(data);

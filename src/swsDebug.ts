@@ -12,12 +12,14 @@ import { IService } from './services/iservice';
 import { IDispatcher } from './idispatcher';
 import { LaunchRequestArguments } from './launchRequestArguments';
 import { IRunControlListener } from './services/runcontrol/irunControlListener';
+import { GotoMain } from './gotoMain';
 import {
     IToolContext, IToolProperties,
     IProcessContext,
     // IRegisterContext,
     IRunControlContext,
 } from './services/contexts';
+import { ResumeMode } from './services/runcontrol/resumeMode';
 import {
     IConnectionProperties,
     ITool
@@ -207,6 +209,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                 self.channel.setRemoteServices(remoteServices);
                 // runControlService.addListener(this);
                 let attachedTools = await tool.getAttachedTools();
+                processes.addListener(new GotoMain(self));
                 /* Once a device has been instantiated, we need to actually launch with a module */
                 device.addListener(new ProcessLauncher(args.program, processes, args));
                 runControl.addListener(self);
@@ -240,6 +243,39 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         /* Once a device has been instantiated, we need to actually launch with a module */
         // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
         this.sendResponse(response);
+        
+    }
+
+    /* Goto helper */
+    /* TODO, doesn't really belong here... */
+    public goto(func: string): void {
+        let expressionsService = <ExpressionService>this.channel.getService('Expressions');
+        let runControlService = <RunControlService>this.channel.getService('RunControl');
+        let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
+        let processService = <ProcessService>this.channel.getService('Processes');
+
+        let runControlContext: IRunControlContext | undefined;
+        processService.contexts.forEach((processContext) => {
+            runControlContext = runControlService.contexts.get(processContext.RunControlId);
+            stackTraceService.getChildren(processContext.ID).then(async (children) => {
+            /* Find address of function identifier */
+                let child = children.shift();
+                if (child) {
+                    let expressionContext = await expressionsService.compute(child, 'C', `${func}`);
+
+                    /* Convert address to number */
+                    let address = parseInt(expressionContext.Val.replace('0x', ''), 16);
+                    expressionsService.dispose(expressionContext.ID);
+
+                    /* Goto address */
+                    if (runControlContext) {
+                        runControlService.resume(runControlContext.ID, ResumeMode.Goto, address);
+                    }
+                } 
+            }).catch((error: Error) => console.log(error.message));
+        });
+
+
         
     }
 }
