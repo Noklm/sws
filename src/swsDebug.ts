@@ -1,10 +1,15 @@
 import { window } from 'vscode';
+const path = require('path');
 import {
     DebugSession,
     InitializedEvent,
     StoppedEvent,
     ContinuedEvent,
-    TerminatedEvent
+    TerminatedEvent,
+    Thread,
+    StackFrame,
+    Source,
+    Variable
 } from 'vscode-debugadapter';
 import { WebsocketDispatcher } from './websocketDispatcher';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -18,6 +23,7 @@ import {
     IProcessContext,
     // IRegisterContext,
     IRunControlContext,
+    IStackTraceContext,
 } from './services/contexts';
 import { ResumeMode } from './services/runcontrol/resumeMode';
 import {
@@ -246,8 +252,74 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         
     }
 
-    /* Goto helper */
-    /* TODO, doesn't really belong here... */
+    protected threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request): void {
+        let processService = <ProcessService>this.channel.getService('Processes');
+
+        // runtime supports no threads so just return a default thread.
+        response.body = {
+            threads: []
+        };
+
+        processService.contexts.forEach(context => {
+            response.body.threads.push(
+                new Thread(this.hasher.hash(context.RunControlId), context.Name));
+        });
+
+        this.sendResponse(response);
+    }
+
+    /* Stack frames are organized as children of a process (violates our thread assumptions) */
+    protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request) {
+        let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
+        let processService = <ProcessService>this.channel.getService('Processes');
+        // let runcontrolContextID = <string>this.hasher.retrieve(args.threadId);
+        response.body = {
+            stackFrames: [],
+            totalFrames: 0
+        };
+        let frames: IStackTraceContext[];
+        processService.contexts.forEach(async (context, key) => {
+            frames = await stackTraceService.getChildren(context.ID);
+            frames.forEach((frame) => {
+                let frameArgs: string[] = [];
+
+                /* Sort frames based on the Order (depth in the stack) */
+                let sortedArgs = frame.Args.sort((a, b) => {
+                    return a.Order - b.Order;
+                });
+
+                /* Create list of all arguments to the function frame */
+                sortedArgs.forEach(frameArg => {
+                    frameArgs.push(
+                        `${frameArg.Type.trim()} ${frameArg.Name.trim()} = ${frameArg.Value.trim()}`
+                    );
+                });
+
+                /* Create frame name based on function and arguments */
+                let frameName = `${frame.Func.trim()} (${frameArgs.join(', ')})`;
+
+                /* Create the source */
+                let remappedFile = path.normalize(frame.File.trim());
+                console.log(`[SRC] ${frame.File} => ${remappedFile}`);
+
+                let source = new Source(path.basename(remappedFile),
+                    this.convertDebuggerPathToClient(remappedFile),
+                    0 /* 0 == Do not use source request to get content */
+                    // this.hashString(frame.File.trim()),
+                    // this.convertDebuggerPathToClient(remappedFile),
+                    // this.convertDebuggerPathToClient(remappedFile)
+                );
+                console.log(`[SOURCE] ${source.path} => ${source.name}`);
+
+                /* Push the frame */
+                response.body.stackFrames.push(
+                    new StackFrame(this.hasher.hash(frame.ID), frameName, source, frame.Line));
+            });
+            this.sendResponse(response);
+        });
+    }
+
+    /* TODO, use goto from vscode-debugadapter */
     public goto(func: string): void {
         let expressionsService = <ExpressionService>this.channel.getService('Expressions');
         let runControlService = <RunControlService>this.channel.getService('RunControl');
