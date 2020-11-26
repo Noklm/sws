@@ -121,7 +121,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         // response.body.supportsBreakpointLocationsRequest = true;
 
         // make VS Code provide "Step in Target" functionality
-        // response.body.supportsStepInTargetsRequest = true;
+        response.body.supportsStepInTargetsRequest = true;
 
         this.sendResponse(response);
 
@@ -385,39 +385,82 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             processService.contexts.forEach(async (context, parentId) => {
 
                 frames = await stackTraceService.getChildren(parentId);
-                frames.forEach((frame) => { 
+                frames.forEach(async (frame) => { 
                     /* Only evaluate if we are asked for this frame (local variables) */
                     if (args.variablesReference === this.hasher.hash(frame.ID)) {
 
                         /* Get expressions for the frame */
-                        expressionService.getChildren(frame.ID).then((children) => {
-                            let childrenToEvaluate = children.length;
+                        let children = await expressionService.getChildren(frame.ID);
+                        let childrenToEvaluate = children.length;
 
-                            if (childrenToEvaluate === 0) {
-                                this.sendResponse(response);
-                            }
+                        if (childrenToEvaluate === 0) {
+                            this.sendResponse(response);
+                        }
 
-                            children.forEach(expression => {
-                                expressionService.getContext(expression.ID).then((expression) => {
+                        children.forEach(expression => {
+                            expressionService.getContext(expression.ID).then((expression) => {
 
-                                    /* Build the variable from the expression*/
-                                    response.body.variables.push(
-                                        new Variable(expression.Expression, expression.Val.trim())
-                                    );
-                                    expression.dispose();
+                                /* Build the variable from the expression*/
+                                response.body.variables.push(
+                                    new Variable(expression.Expression, expression.Val.trim())
+                                );
+                                expressionService.dispose(expression.ID);
 
-                                    if (--childrenToEvaluate === 0) {
-                                        this.sendResponse(response);
-                                    }
-                                }).catch((error: Error) => console.log(error.message));
-                            });
-                        }).catch((error: Error) => console.log(error.message));
+                                if (--childrenToEvaluate === 0) {
+                                    this.sendResponse(response);
+                                }
+                            }).catch((error: Error) => console.log(error.message));
+                        });
                     }
                 });
             });
         }
     }
+    /* Resume is any form of resume */
+    private resume(mode: ResumeMode, threadID?: number): void {
+        let runControlService = <RunControlService>this.channel.getService('RunControl');
 
+        runControlService.contexts.forEach((context,id) => {
+            if (!threadID || threadID === this.hasher.hash(context.ID)) {
+                runControlService.resume(id, mode).catch((error: Error) => console.log(error.message));
+            }
+        });
+    }
+
+    private suspend(threadID?: number): void {
+        let runControlService = <RunControlService>this.channel.getService('RunControl');
+
+        runControlService.contexts.forEach((context,id) => {
+            if (threadID === this.hasher.hash(context.ID) || threadID === 0) {
+                runControlService.suspend(id).catch((error: Error) => console.log(error.message));
+            }
+        });
+    }
+
+    protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
+        this.sendResponse(response);
+        this.resume(ResumeMode.Resume, args.threadId);
+    }
+
+    protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
+        this.sendResponse(response);
+        this.resume(ResumeMode.StepOverLine, args.threadId);
+    }
+
+    protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): void {
+        this.sendResponse(response);
+        this.resume(ResumeMode.StepIntoLine, args.threadId);
+    }
+
+    protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
+        this.sendResponse(response);
+        this.resume(ResumeMode.StepOut, args.threadId);
+    }
+
+    protected pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
+        this.sendResponse(response);
+        this.suspend(args.threadId);
+    }
     /* TODO, use goto from vscode-debugadapter */
     public goto(func: string): void {
         let expressionsService = <ExpressionService>this.channel.getService('Expressions');
