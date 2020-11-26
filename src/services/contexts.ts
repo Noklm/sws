@@ -1,6 +1,6 @@
 'use strict';
 
-// export * from './breakpoint/ibreakpointContext';
+export * from './breakpoint/ibreakpointContext';
 export * from './device/ideviceContext';
 export * from './expression/iexpressionContext';
 // export * from './linenumber/ilineNumberContext';

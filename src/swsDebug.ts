@@ -39,7 +39,7 @@ import {
     MemoryService,
     // LineNumberService,
     StreamService,
-    // BreakpointsService,
+    BreakpointsService,
     RunControlService,
     RegisterService,
     StackTraceService,
@@ -197,8 +197,10 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             let registers = new RegisterService(dispatcher);
             let stackTrace = new StackTraceService(dispatcher);
             let expressions = new ExpressionService(dispatcher);
+            let breakpoints = new BreakpointsService(dispatcher);
 
             // Ordre AZ
+            self.channel.setLocalService(breakpoints);
             self.channel.setLocalService(device);
             self.channel.setLocalService(expressions);
             self.channel.setLocalService(locator);
@@ -252,6 +254,66 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         this.sendResponse(response);
         
     }
+
+    /* TODO: this is called once PER SOURCE FILE. Need to extend acitveBreakpoints etc */
+    // protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
+    //     let processService = <ProcessService>this.channel.getService('Processes');
+    //     let breakpointsService = <BreakpointsService>this.channel.getService('Breakpoints');
+
+    //     response.body = {
+    //         breakpoints: []
+    //     };
+
+    //     /* Fetch the running process */
+    //     let processContext: IProcessContext;
+    //     for (let index in processService.contexts) {
+    //         processContext = processService.contexts[index];
+    //     }
+
+    //     /* Remove all active breakpoints */
+    //     breakpointsService.remove(this.activeBreakpointIds);
+    //     this.activeBreakpointIds = [];
+
+    //     let breakpointsToProcess = args.breakpoints.length;
+
+    //     args.breakpoints.forEach(breakpointArgs => {
+    //         let breakpointId = breakpointsService.getNextBreakpointId();
+
+    //         let breakpoint = {
+    //             'ContextIds': [processContext.ID],
+    //             'AccessMode': AccessMode.Execute,
+    //             'ID': breakpointId,
+    //             'Enabled': true,
+    //             'IgnoreCount': 1,
+    //             'IgnoreType': 'always',
+    //             'Line': breakpointArgs.line,
+    //             'Column': breakpointArgs.column | 0
+    //         };
+
+    //         if (args.source.path) {
+    //             breakpoint['File'] = args.source.path;
+    //         } // else use args.source.sourceReference
+
+    //         if (breakpointArgs.condition) {
+    //             breakpoint['Condition'] = breakpointArgs.condition;
+    //             breakpoint['Istrue'] = true;
+    //         }
+
+    //         breakpointsService.add(breakpoint).then((report) => {
+    //             breakpointsService.getProperties(breakpointId).then((breakpoint) => {
+    //                 let bp = new Breakpoint(breakpoint.Enabled, breakpoint.Line, breakpoint.Column);
+
+    //                 response.body.breakpoints.push(bp);
+    //                 this.activeBreakpointIds.push(breakpointId);
+
+    //                 /* Since we need to bind all the requested breakpoints before responding, wait until the last is bound */
+    //                 if (--breakpointsToProcess === 0) {
+    //                     this.sendResponse(response);
+    //                 }
+    //             }).catch((error: Error) => this.log(error.message));
+    //         }).catch((error: Error) => this.log(error.message));
+    //     });
+    // }
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request): void {
         let processService = <ProcessService>this.channel.getService('Processes');
