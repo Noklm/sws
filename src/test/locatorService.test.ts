@@ -16,10 +16,6 @@ suite('Locator service', () => {
         return dispatcher;
     });
 
-    // teardown(() => {
-    //     dc.stop();
-    // });
-
 
     suite('Command Hello', () => {
 

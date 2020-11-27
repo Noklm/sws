@@ -18,11 +18,6 @@ suite('Tool service', () => {
         return dispatcher;
     });
 
-    // teardown(() => {
-    //     dc.stop();
-    // });
-
-
     suite('Command getAttachedTools', () => {
 
         test("Should return an ITool's list of size 3", () => {
