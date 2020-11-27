@@ -1,5 +1,5 @@
 import assert = require('assert');
-import { IDispatcher } from './../idispatcher';
+
 import { LocatorService } from './../services/services';
 import { MockDispatcher } from './mock/mockDispatcher';
 

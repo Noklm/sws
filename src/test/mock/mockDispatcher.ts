@@ -39,7 +39,7 @@ export class MockDispatcher implements IDispatcher {
      * @param args
      */ 
     sendEvent(serviceName: string, eventName: string, args: any[]) {
-        throw new Error('Method not implemented.');
+        // throw new Error('Method not implemented.');
     };
 
     /**
@@ -64,10 +64,9 @@ export class MockDispatcher implements IDispatcher {
      * @param handler our service that implements IEventHandler
      */
     public mockDecodeEvent(eventName: string, handler: IEventHandler) {
-        let data: string[] = new Array<string>(0);
         let event = {
             command: eventName,
-            args: data[0] = this.config[eventName]
+            args: this.config[eventName]
         };
         handler.eventHandler(event);
     }
