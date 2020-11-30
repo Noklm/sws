@@ -26,6 +26,17 @@ export class ExpressionService extends AbstractService<IExpressionContext, IExpr
 			}).catch(reject);
 		});
 	}
+	
+	public getChildrenRange(parentContext: string, numChildren:number): Promise<IExpressionContext[]> {
+		let self = this;
+
+		return new Promise<IExpressionContext[]>(function (resolve, reject) {
+			self.dispatcher.sendCommand(self._name, 'getChildrenRange', [parentContext, 0, numChildren]).then((data: string) => {
+				let contexts:IExpressionContext[] = JSON.parse(data);
+				resolve(contexts);
+			}).catch(reject);
+		});
+	}
 
 	public getContext(contextId: string): Promise<IExpressionContext> {
 		let self = this;

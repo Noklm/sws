@@ -103,6 +103,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         // the adapter implements the configurationDoneRequest.
         response.body.supportsConfigurationDoneRequest = true;
         args.supportsProgressReporting = true;
+        args.supportsVariableType = true;
 
         // make VS Code to use 'evaluate' when hovering over source
         // response.body.supportsEvaluateForHovers = true;
@@ -375,7 +376,6 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     }
 
     /* Scopes describes a collection of variables */
-    /* TODO: is registers a scope? Global scope? */
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
         let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
         let processService = <ProcessService>this.channel.getService('Processes');
@@ -387,17 +387,13 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         processService.contexts.forEach(async (context,parentId) => {
 
             frames = await stackTraceService.getChildren(parentId);
-            frames.forEach((frame) => {
-                if (frame.Level === 0) {
-                    // response.body.scopes.push(new Scope("Global", this.hashString(frame.ID), false));
-                }
-
-                /* Create local scope if we are asked for a frame that we found */
-                if (args.frameId === this.hasher.hash(frame.ID)) {
-                    response.body.scopes.push(new Scope('Local', this.hasher.hash(frame.ID), false));
-                }
-            });
-
+            if (frames.length > 0) {
+                response.body.scopes.push(new Scope('Local', this.hasher.hash(frames.shift()!.ID)));
+                frames.forEach((frame) => {
+                    response.body.scopes.push(new Scope(frame.Func, this.hasher.hash(frame.ID), false));
+                });
+            }
+            
             /* Push the registers scope */
             response.body.scopes.push(new Scope('Registers', this.hasher.hash('Registers'), false));
 
@@ -429,8 +425,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             };
             this.sendResponse(response);
         }
-        else {
-            /* Assume that we are fetching variables from a stack frame */
+        else{
             let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
             let processService = <ProcessService>this.channel.getService('Processes');
             let expressionService = <ExpressionService>this.channel.getService('Expressions');
@@ -439,49 +434,53 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             processService.contexts.forEach(async (context, parentId) => {
 
                 frames = await stackTraceService.getChildren(parentId);
-                frames.forEach(async (frame) => { 
-                    /* Only evaluate if we are asked for this frame (local variables) */
-                    if (args.variablesReference === this.hasher.hash(frame.ID)) {
-
-                        /* Get expressions for the frame */
-                        let children = await expressionService.getChildren(frame.ID);
-                        let childrenToEvaluate = children.length;
-
-                        if (childrenToEvaluate === 0) {
-                            this.sendResponse(response);
-                        }
-
-                        children.forEach(expression => {
-                            expressionService.getContext(expression.ID).then( async (expression) => {
-                                if (expression.Numchildren !== 0) {
-                                    let expChildren = await expressionService.getChildren(expression.ID);
-                                    // let buffer = Buffer.from(JSON.parse(expChildren), 'base64');
-                                    // let valueString = `0x${buffer.readUIntBE(0, expression.Size).toString(16)}`;
-                                    /* Build the variable from the expression*/
-     
-                                    // response.body.variables.push(
-                                    //     new Variable(expression.Expression, valueString)
-                                    // );
-                                
-
-                                } else {
-                                    /* Build the variable from the expression*/
-                                    response.body.variables.push(
-                                        new Variable(expression.Expression, expression.Val.trim())
-                                    );
-                                }
-                                expressionService.dispose(expression.ID);
-
-                                if (--childrenToEvaluate === 0) {
-                                    this.sendResponse(response);
-                                }
-                            }).catch((error: Error) => console.log(error.message));
-                        });
-                    }
+                let scopeId: string = <string>this.hasher.retrieve(args.variablesReference);
+                let frame = frames.find((frame) => {
+                    return scopeId === frame.ID;
                 });
-            });
+
+                if (frame) {
+                    /* Get expressions for the frame */
+                    let children = await expressionService.getChildren(frame.ID);
+                    let childrenToEvaluate = children.length;
+
+                    if (childrenToEvaluate === 0) {
+                        this.sendResponse(response);
+                    }
+
+                    children.forEach(expression => {
+                        expressionService.getContext(expression.ID).then(async (expression) => {
+                            let variable: Variable = new Variable(expression.Expression, expression.Val.trim());
+                            variable.type = expression.Type;
+
+                            if (expression.Numchildren !== 0) {
+                                variable.variablesReference = this.hasher.hash(expression.ID);
+                            } else {
+                                expressionService.dispose(expression.ID);
+                            }
+                            /* Build the variable from the expression*/
+                            response.body.variables.push(variable);
+
+
+                            if (--childrenToEvaluate === 0) {
+                                this.sendResponse(response);
+                            }
+                        }).catch((error: Error) => console.log(error.message));
+                    });
+                } else {
+                    let struct = await expressionService.getContext(scopeId);
+                    let fields = await expressionService.getChildrenRange(scopeId, struct.Numchildren);
+                    fields.forEach((field) => {
+                        response.body.variables.push(
+                            new Variable(field.Expression, field.Val)
+                        );
+                    });
+                    this.sendResponse(response);
+                }
+            });            
         }
     }
+
     /* Resume is any form of resume */
     private resume(mode: ResumeMode, threadID?: number): void {
         let runControlService = <RunControlService>this.channel.getService('RunControl');
