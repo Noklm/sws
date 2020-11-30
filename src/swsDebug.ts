@@ -454,7 +454,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                         children.forEach(expression => {
                             expressionService.getContext(expression.ID).then( async (expression) => {
                                 if (expression.Numchildren !== 0) {
-                                    let expChildren = await expressionService.getChildrenRange(expression.ID);
+                                    let expChildren = await expressionService.getChildren(expression.ID);
                                     // let buffer = Buffer.from(JSON.parse(expChildren), 'base64');
                                     // let valueString = `0x${buffer.readUIntBE(0, expression.Size).toString(16)}`;
                                     /* Build the variable from the expression*/
