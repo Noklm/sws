@@ -50,6 +50,17 @@ export class ExpressionService extends AbstractService<IExpressionContext, IExpr
 		});
 	}
 
+	public evaluate(contextID: string): Promise<string> {
+		let self = this;
+
+		return new Promise<any>(function (resolve, reject) {
+			self.dispatcher.sendCommand(self._name, 'evaluate', [contextID]).then((data: string) => {
+				// let contextData = JSON.parse(data);
+				resolve(data);
+			}).catch(reject);
+		});
+	}
+
 	public assign(contextId: string, value: string): Promise<string> {
 		return this.dispatcher.sendCommand(this._name, 'assign', [contextId, value]);
 	}

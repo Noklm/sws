@@ -10,7 +10,8 @@ import {
     StackFrame,
     Source,
     Scope,
-    Variable
+    Variable,
+    Breakpoint
 } from 'vscode-debugadapter';
 import { WebsocketDispatcher } from './websocketDispatcher';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -25,6 +26,7 @@ import {
     IRegisterContext,
     IRunControlContext,
     IStackTraceContext,
+    IBreakpointContext,
 } from './services/contexts';
 import { ResumeMode } from './services/runcontrol/resumeMode';
 import {
@@ -45,6 +47,7 @@ import {
     StackTraceService,
     ExpressionService
 } from './services/services';
+import { AccessMode } from './services/breakpoint/accessMode';
 import { NumericalHashCode } from './numericalHashCode';
 import { Channel } from './channel/channel';
 import { ProcessLauncher } from './processLauncher';
@@ -254,66 +257,55 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         this.sendResponse(response);
         
     }
-
+    private activeBreakpointIds = new Array<string>();
     /* TODO: this is called once PER SOURCE FILE. Need to extend acitveBreakpoints etc */
-    // protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
-    //     let processService = <ProcessService>this.channel.getService('Processes');
-    //     let breakpointsService = <BreakpointsService>this.channel.getService('Breakpoints');
+    protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
+        let processService = <ProcessService>this.channel.getService('Processes');
+        let breakpointsService = <BreakpointsService>this.channel.getService('Breakpoints');
 
-    //     response.body = {
-    //         breakpoints: []
-    //     };
+        response.body = {
+            breakpoints: []
+        };
+        processService.contexts.forEach((context) => {
+            breakpointsService.remove(this.activeBreakpointIds);
+            this.activeBreakpointIds = [];
+            let breakpointsToProcess: number = args.breakpoints!.length;
+            args.breakpoints?.forEach((breakpointArgs) => {
+                let breakpointId = breakpointsService.getNextBreakpointId();
+                
+                let breakpoint: { [k: string]: any } = {
+                    'ContextIds': [context.ID],
+                    'AccessMode': AccessMode.Execute,
+                    'ID': breakpointId,
+                    'Enabled': true,
+                    'IgnoreCount': 1,
+                    'IgnoreType': 'always',
+                    'Line': breakpointArgs.line,
+                    'Column': breakpointArgs.column ?? 0 // Column = breakpointArgs.column if not undefined else 0
+                };
+                breakpoint['File'] = args.source.path ?? args.source.sourceReference;
+                if (breakpointArgs.condition) {
+                    breakpoint['Condition'] = breakpointArgs.condition;
+                    breakpoint['Istrue'] = true;
+                }
+                breakpointsService.add(breakpoint).then((report) => {
+                    breakpointsService.getProperties(breakpointId).then((breakpoint) => {
+                        let bp = new Breakpoint(breakpoint.Enabled, breakpoint.Line, breakpoint.Column);
 
-    //     /* Fetch the running process */
-    //     let processContext: IProcessContext;
-    //     for (let index in processService.contexts) {
-    //         processContext = processService.contexts[index];
-    //     }
+                        response.body.breakpoints.push(bp);
+                        this.activeBreakpointIds.push(breakpointId);
 
-    //     /* Remove all active breakpoints */
-    //     breakpointsService.remove(this.activeBreakpointIds);
-    //     this.activeBreakpointIds = [];
+                        /* Since we need to bind all the requested breakpoints before responding, wait until the last is bound */
+                        if (--breakpointsToProcess === 0) {
+                            this.sendResponse(response);
+                        }
+                    }).catch((error: Error) => console.log(error.message));
+                }).catch((error: Error) => console.log(error.message));
+            });
+        });
 
-    //     let breakpointsToProcess = args.breakpoints.length;
-
-    //     args.breakpoints.forEach(breakpointArgs => {
-    //         let breakpointId = breakpointsService.getNextBreakpointId();
-
-    //         let breakpoint = {
-    //             'ContextIds': [processContext.ID],
-    //             'AccessMode': AccessMode.Execute,
-    //             'ID': breakpointId,
-    //             'Enabled': true,
-    //             'IgnoreCount': 1,
-    //             'IgnoreType': 'always',
-    //             'Line': breakpointArgs.line,
-    //             'Column': breakpointArgs.column | 0
-    //         };
-
-    //         if (args.source.path) {
-    //             breakpoint['File'] = args.source.path;
-    //         } // else use args.source.sourceReference
-
-    //         if (breakpointArgs.condition) {
-    //             breakpoint['Condition'] = breakpointArgs.condition;
-    //             breakpoint['Istrue'] = true;
-    //         }
-
-    //         breakpointsService.add(breakpoint).then((report) => {
-    //             breakpointsService.getProperties(breakpointId).then((breakpoint) => {
-    //                 let bp = new Breakpoint(breakpoint.Enabled, breakpoint.Line, breakpoint.Column);
-
-    //                 response.body.breakpoints.push(bp);
-    //                 this.activeBreakpointIds.push(breakpointId);
-
-    //                 /* Since we need to bind all the requested breakpoints before responding, wait until the last is bound */
-    //                 if (--breakpointsToProcess === 0) {
-    //                     this.sendResponse(response);
-    //                 }
-    //             }).catch((error: Error) => this.log(error.message));
-    //         }).catch((error: Error) => this.log(error.message));
-    //     });
-    // }
+        
+    }
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request): void {
         let processService = <ProcessService>this.channel.getService('Processes');
@@ -460,12 +452,24 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                         }
 
                         children.forEach(expression => {
-                            expressionService.getContext(expression.ID).then((expression) => {
+                            expressionService.getContext(expression.ID).then( async (expression) => {
+                                if (expression.Numchildren !== 0) {
+                                    let expChildren = await expressionService.getChildrenRange(expression.ID);
+                                    // let buffer = Buffer.from(JSON.parse(expChildren), 'base64');
+                                    // let valueString = `0x${buffer.readUIntBE(0, expression.Size).toString(16)}`;
+                                    /* Build the variable from the expression*/
+     
+                                    // response.body.variables.push(
+                                    //     new Variable(expression.Expression, valueString)
+                                    // );
+                                
 
-                                /* Build the variable from the expression*/
-                                response.body.variables.push(
-                                    new Variable(expression.Expression, expression.Val.trim())
-                                );
+                                } else {
+                                    /* Build the variable from the expression*/
+                                    response.body.variables.push(
+                                        new Variable(expression.Expression, expression.Val.trim())
+                                    );
+                                }
                                 expressionService.dispose(expression.ID);
 
                                 if (--childrenToEvaluate === 0) {

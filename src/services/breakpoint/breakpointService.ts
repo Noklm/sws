@@ -6,7 +6,6 @@
 import { IDispatcher, AbstractService } from './../abstractService';
 
 import { IBreakpointContext } from './ibreakpointContext';
-import { BreakpointContext } from './breakpointContext';
 import { IBreakpointListener } from './ibreakpointListener';
 
 export class BreakpointsService extends AbstractService<IBreakpointContext, IBreakpointListener> {

@@ -35,14 +35,7 @@ export class StackTraceService extends AbstractService<IStackTraceContext, IStac
 		let self = this;
 		let ids: string[];
 		ids = externalContexts;
-		// externalContexts.forEach((context:any) => {
-		// 	if ("ID" in context) {
-		// 		ids.push(context.ID);
-		// 	} else {
-		// 		ids.push(context);
-		// 	}
-			
-		// });
+
 		return new Promise<IStackTraceContext[]>(function(resolve, reject) {
 			self.dispatcher.sendCommand(self._name, 'getContext', [ids]).then( (data: string) => {
 				let contextsData = <IStackTraceContext[]>JSON.parse(data);
