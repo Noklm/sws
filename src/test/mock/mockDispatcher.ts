@@ -1,28 +1,34 @@
 import { IDispatcher } from './../../idispatcher';
-// import { LocatorService, ToolService } from './../services/services';
+import { IProgressEventHandler, IService } from './../../services/iservice';
 import { IEventHandler } from './../../services/IService';
 import * as data from "./mockCommands.json";
 
 /**
  * This MockDispatcher is used for tests purpose to mock (simulate) a dispatcher
- * 
  */
 export class MockDispatcher implements IDispatcher {
     private config: { [index: string]: string };
-    private eventHandlers: Map<string, IEventHandler>;
-    // private nil: string = '\x00';
-    // private eom: string = '\x03\x01';
 
     public constructor() {
         this.config = data;
-        this.eventHandlers = new Map<string, IEventHandler>();
     }
 
-    connect(callback: (dispatcher: IDispatcher) => void) { };
+    log(data: string) { };
+    debug(data: string) { };
 
-    eventHandler(service: string, handler: IEventHandler) {
-        this.eventHandlers.set(service, handler);
-    };
+    progressHandler(handler: IProgressEventHandler): void {
+        throw new Error('Method not implemented.');
+    }
+
+    connect(callback: (dispatcher: IDispatcher) => void) {
+        throw new Error('Method not implemented.');
+     };
+
+	public eventHandler(service: IService): void {
+		this.log(`[Dispatcher] Registering event handler for ${service.getName()}`);
+		service.registerCommands();
+		// this.eventEmitter.on(service.getName(), service.eventHandler);
+	}
 
     /**
      *
@@ -32,7 +38,9 @@ export class MockDispatcher implements IDispatcher {
      * @param eventName Used to search in the json the typical string that we can receive from the event response
      * @param args
      */ 
-    sendEvent(serviceName: string, eventName: string, args: any[]) {};
+    sendEvent(serviceName: string, eventName: string, args: any[]) {
+        // throw new Error('Method not implemented.');
+    };
 
     /**
      * 
@@ -49,9 +57,6 @@ export class MockDispatcher implements IDispatcher {
         });
     }
 
-    log(data: string) { };
-    debug(data: string) { };
-
     /**
      * Simulate that an event arrived asynchronously and to test our event handler work fine
      * @param eventName 
@@ -59,10 +64,9 @@ export class MockDispatcher implements IDispatcher {
      * @param handler our service that implements IEventHandler
      */
     public mockDecodeEvent(eventName: string, handler: IEventHandler) {
-        let data: string[] = new Array<string>(0);
         let event = {
             command: eventName,
-            args: data[0] = this.config[eventName]
+            args: this.config[eventName]
         };
         handler.eventHandler(event);
     }
