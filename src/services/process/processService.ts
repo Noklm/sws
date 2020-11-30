@@ -4,24 +4,27 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IProcessContext } from './iprocessContext';
-import { ProcessContext } from './processContext';
 import { IProcessListener } from './iprocessListener';
-
 import { IDeviceContext } from './../device/ideviceContext';
-
 
 
 export class ProcessService extends AbstractService<IProcessContext, IProcessListener> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Processes', dispatcher);
+		this.dispatcher.eventHandler(this);
+	}
+
+	public registerCommands() {
+		super.registerCommands();
+		this._commandEmitter.on('exited', this.handleExited);
 	}
 
 	public launch(module: string, deviceContext: IDeviceContext, launchParameters: any): Promise<IProcessContext> { // TODO: Promise<IProcessContext>
 		let self = this;
 
 		return new Promise<IProcessContext>(function(resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'launch', [module, deviceContext.ID, launchParameters]).then( (processId: string) => {
+			self.dispatcher.sendCommand(self._name, 'launch', [module, deviceContext.ID, launchParameters]).then( (processId: string) => {
 				let context = self.getContext(processId);
 				resolve(context);
 			}).catch(reject);
@@ -29,39 +32,19 @@ export class ProcessService extends AbstractService<IProcessContext, IProcessLis
 	}
 
 	public terminate(id: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'terminate', [id]);
+		return this.dispatcher.sendCommand(this._name, 'terminate', [id]);
 	}
 
 
-	public eventHandler(event: string, eventData: string[]): boolean {
-		if (super.eventHandler(event, eventData)) {
-			return true;
-		}
-
-		switch (event) {
-			case 'exited':
-				this.handleExited(eventData);
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	private handleExited(eventData: string[]): void {
+	private handleExited = (eventData: string[]): void => {
 		this.log(`Cannot handle exited event with data: ${eventData}`);
+	};
+
+	public setProperties(properties: any): Promise<any> {
+		return Promise.reject(Error('NOT IMPLEMENTED'));
 	}
 
-	public fromJson(service: ProcessService, data: IProcessContext): IProcessContext {
-		let context = new ProcessContext();
-
-		context.processesService = service;
-
-		context.ID = data['ID'];
-		context.Name = data['Name'];
-
-		context.RunControlId = data['RunControlId'];
-
-		return context;
+	public getProperties(): Promise<any> {
+		return Promise.reject(Error('NOT IMPLEMENTED'));
 	}
-
 }

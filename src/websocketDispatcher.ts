@@ -1,8 +1,9 @@
 'use strict';
 
+import { EventEmitter } from 'events';
 import * as WebSocket from 'ws';
 import { IDispatcher } from './IDispatcher';
-import { IEventHandler, IProgressEventHandler, ICongestionHandler } from './services/iservice';
+import { IProgressEventHandler, ICongestionHandler, IService } from './services/iservice';
 
 
 /**
@@ -23,15 +24,16 @@ export class WebsocketDispatcher implements IDispatcher {
 	private eom: string = '\x03\x01';
 
 	private pendingHandlers = new Map<number, any[]>();
-	private eventHandlers = new Map<string, IEventHandler>();
 	private progressHandlers = new Array<IProgressEventHandler>();
 	private congestionHandlers = new Array<ICongestionHandler>();
 
+	private eventEmitter: EventEmitter;
 	private logger?: (message: string) => void;
 	private debugLogger?: (message: string) => void;
 
 	public constructor(host: string, port: number, logger?: (message: string) => void, debugLogger?: (message: string) => void) {
 		this.sendToken = 1;
+		this.eventEmitter = new EventEmitter();
 		this.host = host;
 		this.port = port;
 
@@ -117,9 +119,10 @@ export class WebsocketDispatcher implements IDispatcher {
 	 * @param service name of the TCF service 
 	 * @param handler TCF Service class that implements IEventHandler
 	 */
-	public eventHandler(service: string, handler: IEventHandler): void {
-		this.log(`[Dispatcher] Registering event handler for ${service}`);
-		this.eventHandlers.set(service, handler);
+	public eventHandler(service: IService): void {
+		this.log(`[Dispatcher] Registering event handler for ${service.getName()}`);
+		service.registerCommands();
+		this.eventEmitter.on(service.getName(), service.eventHandler);
 	}
 
 	/**
@@ -150,7 +153,6 @@ export class WebsocketDispatcher implements IDispatcher {
 		if (this.ws) {
 			this.ws.send(message);
 		}
-		
 	}
 
 	/**
@@ -267,10 +269,17 @@ export class WebsocketDispatcher implements IDispatcher {
 	 */
 	private decodeEvent(data: string[]): void {
 		let serviceName = data.shift() as string;
-		let eventName = data.shift() as string;
-		let eventData = data;
-
-		this.handleEvent(serviceName, eventName, eventData);
+		let event = {
+			command: data.shift() as string,
+			args: data
+		};
+		if (this.eventEmitter.emit(serviceName, event)) {
+			this.debug(`[Dispatcher] Event sends for ${serviceName}`);
+		} else {
+			this.debug(`[Dispatcher] Event listener for ${serviceName} is not registered`);
+		}
+			
+		
 	}
 
 	/**
@@ -286,7 +295,7 @@ export class WebsocketDispatcher implements IDispatcher {
 			handler.progress(+eventData['ProgressComplete'], +eventData['ProgressTotal'], eventData['Description']);
 		});
 
-		this.log(`[Dispatcher] Progress: ${eventData}`);
+		this.log(`[Dispatcher] Progress: ${eventData['ProgressComplete']}`);
 	}
 
 	/**
@@ -325,26 +334,6 @@ export class WebsocketDispatcher implements IDispatcher {
 
 		this.log(`[Dispatcher] Congestion: ${congestion}`);
 
-	}
-	/**
-	 * Handles a TCF event
-	 * 
-	 * @param serviceName TCF service's name
-	 * @param eventName Event name
-	 * @param eventData Data of the event
-	 */
-	private handleEvent(serviceName: string, eventName: string, eventData: string[]): void {
-		if (this.eventHandlers.get(serviceName)) {
-			let handler: IEventHandler = this.eventHandlers.get(serviceName) as IEventHandler;
-
-			let handled = handler.eventHandler(eventName, eventData);
-			if (!handled) {
-				this.log(`[${serviceName}] Event handler failed to handle event '${eventName}'`);
-			}
-		}
-		else {
-			this.debug(`[Dispatcher] Event handler for ${serviceName} is not registered`);
-		}
 	}
 
 	/**

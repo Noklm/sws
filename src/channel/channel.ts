@@ -43,9 +43,9 @@ export class Channel implements IChannel {
      * 
      * @param name name of the local service to return
      */
-    public getService(name: string) {
+    public getService<TService extends IService>(name: string) {
         if (this.localServices.has(name) && this.remoteServices.includes(name)) {
-            return this.localServices.get(name) as IService;
+            return this.localServices.get(name) as TService;
         }
         throw new Error(`[Channel] Unknown ${name} service`);
     };

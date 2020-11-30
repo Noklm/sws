@@ -12,6 +12,6 @@ export interface IChannel {
     // getters
     getRemoteServices(): string[];
     getLocalServices(): string[];
-    getService(name: string): IService;
+    getService<TService extends IService>(name: string): TService;
     getAttachedTool(name: string): ITool;
 }

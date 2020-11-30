@@ -1,113 +1,68 @@
 'use strict';
 
-import { IService, IEventHandler } from './iservice';
-import { IContext, IContextListener, IContextConstructor } from './icontext';
+import { IService, IEventHandler, IEvent } from './iservice';
+import { IContext, IContextListener } from './icontext';
 
 import { IDispatcher } from './../idispatcher';
-import { ToolContext } from './tool/toolContext';
+import { EventEmitter } from 'events';
 
 abstract class AbstractService<TContext extends IContext, TListener extends IContextListener<TContext>> implements IService {
-	private _name: string;
+	protected _name: string;
+	protected _commandEmitter: EventEmitter; // One service handle commands on events
 	protected dispatcher: IDispatcher;
 
-	public contexts: Map<string, TContext> = new Map<string, TContext>();
-	protected listeners: Array<TListener> = new  Array<TListener>();
+	public contexts: Map<string, TContext>;	// One service can have one or more contexts
+	protected listeners: Array<TListener>; // One service can have on or more listeners
 
 
 	public constructor(name: string, dispatcher: IDispatcher) {
 		this._name = name;
+		this._commandEmitter = new EventEmitter();
 		this.dispatcher = dispatcher;
-
-		this.dispatcher.eventHandler(name, (<IEventHandler>this));
+		this.contexts = new Map<string, TContext>();
+		this.listeners = new Array<TListener>();
 	}
 
+	/**
+	 * As a service we need to get his name
+	 */
 	public getName(): string{
 		return this._name;
+	}
+
+	/**
+	 * All services implement commands, overload this method if more commands are available for the service
+	 */
+	public registerCommands() {
+		this._commandEmitter.on('contextAdded', this.handleContextAdded);
+		this._commandEmitter.on('contextChanged', this.handleContextChanged);
+		this._commandEmitter.on('contextRemoved', this.handleContextRemoved);
 	}
 
 	protected log(message: string): void {
 		this.dispatcher.log(`[${this._name}] ${message}`);
 	}
 
-	abstract fromJson(data: TContext): TContext;
-
-	public eventHandler(event: string, eventData: string[]): boolean {
-		switch (event) {
-			case 'contextAdded':
-				this.handleContextAdded(eventData);
-				return true;
-			case 'contextChanged':
-				this.handleContextChanged(eventData);
-				return true;
-			case 'contextRemoved':
-				this.handleContextRemoved(eventData);
-				return true;
-			default:
-				return false;
+	public eventHandler = (event: IEvent): void => {
+		if (this._commandEmitter.emit(event.command, event.args)) {
+			this.log(`Command ${event.command} done`);
+		} else {
+			this.log(`Command ${event.command} unknown`);
 		}
-	}
+	};
+	abstract setProperties(contextId: string, properties: TContext): Promise<string>;
+	abstract getProperties(contextId: string): Promise<TContext>;
 
-	private handleContextAdded(eventData: string[]): void {
-		let self = this;
-
-		let contextsData = <TContext[]>JSON.parse(eventData[0]);
-		let newContexts = new Array<TContext>();
-
-		contextsData.forEach(contextData => {
-			let context = self.fromJson(contextData);
-			this.contexts.set(context.ID, context);
-			newContexts.push(context);
-		});
-
-		this.log(`ContextAdded: ${newContexts}`);
-
-		this.listeners.forEach(listener => {
-			listener.contextAdded(newContexts);
-		});
-	}
-
-	private handleContextChanged(eventData: string[]): void {
-		let self = this;
-
-		let contextsData = <TContext[]>JSON.parse(eventData[0]);
-		let newContexts = new Array<TContext>();
-
-		contextsData.forEach(contextData => {
-			let context = self.fromJson(contextData);
-			this.contexts.set(context.ID, context);
-			newContexts.push(context);
-		});
-
-		this.log(`ContextAdded: ${newContexts}`);
-
-		this.listeners.forEach(listener => {
-			listener.contextChanged(newContexts);
-		});
-	}
-
-	private handleContextRemoved(eventData: string[]): void {
-		let ids = <string[]>JSON.parse(eventData[0]);
-
-		ids.forEach(id => {
-			if (id in this.contexts) {
-				// this.contexts.set(id, undefined);
-			}
-		});
-
-		this.log(`ContextRemoved: ${ids}`);
-
-		this.listeners.forEach(listener => {
-			listener.contextRemoved(ids);
-		});
-	}
-
-
+//----------------------------------------------------------------------
+	// Context
+//----------------------------------------------------------------------
+	
 	public addListener(listener: TListener): void {
 		this.listeners.push(listener);
 	}
 
 	public removeListener(listener: TListener): void {
-		this.listeners = this.listeners.filter( (value) => {
+		this.listeners = this.listeners.filter((value) => {
 			return value !== listener;
 		});
 	}
@@ -116,7 +71,59 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		return Promise.resolve(this.contexts.get(id) as TContext);
 	}
 
+	private handleContextAdded = (eventData: string[]): void => {
+		let self = this;
 
+		let contextsData = <TContext[]>JSON.parse(eventData[0]);
+		let newContexts = new Array<TContext>();
+
+		contextsData.forEach(contextData => {
+			this.contexts.set(contextData.ID, contextData);
+			newContexts.push(contextData);
+			this.log(`ContextAdded: ${contextData.ID}`);
+		});
+
+		
+
+		this.listeners.forEach(listener => {
+			listener.contextAdded(newContexts);
+		});
+	};
+
+	private handleContextChanged = (eventData: string[]): void => {
+		let self = this;
+
+		let contextsData = <TContext[]>JSON.parse(eventData[0]);
+		let newContexts = new Array<TContext>();
+
+		contextsData.forEach(contextData => {
+			this.contexts.set(contextData.ID, contextData);
+			newContexts.push(contextData);
+			this.log(`ContextChanged: ${contextData.ID}`);
+		});
+
+		
+
+		this.listeners.forEach(listener => {
+			listener.contextChanged(newContexts);
+		});
+	};
+
+	private handleContextRemoved = (eventData: string[]): void => {
+		let ids = <string[]>JSON.parse(eventData[0]);
+
+		ids.forEach(id => {
+			if (id in this.contexts) {
+				this.contexts.delete(id);
+			}
+		});
+
+		this.log(`ContextRemoved: ${ids}`);
+
+		this.listeners.forEach(listener => {
+			listener.contextRemoved(ids);
+		});
+	};
 }
 
 // TODO: Don't export IDispatcher from here...

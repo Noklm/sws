@@ -1,20 +1,23 @@
 'use strict';
 
+import { EventEmitter } from 'events';
 import { IDispatcher } from './../abstractService';
-import { IEventHandler, IResponseHandler, IService } from './../iservice';
+import { IEventHandler, IResponseHandler, IService, IEvent } from './../iservice';
 import { IPeer } from './ipeer';
 
-export class LocatorService implements IEventHandler, IService {
+export class LocatorService implements IService{
 
 	public peers: Array<IPeer> = new Array<IPeer>();
 
 	private onHelloCallback!: (remoteServices:string[]) => void;
 	private dispatcher: IDispatcher;
 	private name = 'Locator';
+	private _commandEmitter : EventEmitter; 
 
 	public constructor(dispatcher: IDispatcher) {
 		this.dispatcher = dispatcher;
-		this.dispatcher.eventHandler(this.name, this);
+		this._commandEmitter = new EventEmitter();
+		this.dispatcher.eventHandler(this);
 	}
 
 	private log(message: string): void {
@@ -32,6 +35,14 @@ export class LocatorService implements IEventHandler, IService {
 		return this.name;
 	}
 
+	public registerCommands() {
+		this._commandEmitter.on('Hello', this.handleHello);
+		this._commandEmitter.on('peerAdded', this.handlePeerAdded);
+		this._commandEmitter.on('peerChanged', this.handlePeerChanged);
+		this._commandEmitter.on('peerRemoved', this.handlePeerRemoved);
+		this._commandEmitter.on('peerHeartBeat', this.handlePeerHeartBeat);
+	}
+
 	/**
 	 * Sends our Hello event with DA services and register a callback when Hello event from the remote peer
 	 * 
@@ -39,7 +50,6 @@ export class LocatorService implements IEventHandler, IService {
 	 */
 	public hello(localServices: string[], callback?: (remoteServices:string[]) => void): void {
 		this.dispatcher.sendEvent(this.name, 'Hello', [localServices]);
-
 		if (callback) {
 			this.onHelloCallback = callback;
 		}
@@ -50,62 +60,47 @@ export class LocatorService implements IEventHandler, IService {
 	 * 
 	 * @param eventData new peer
 	 */
-	private handlePeerAdded(eventData: string[]): void {
+	private handlePeerAdded = (eventData: string[]): void => {
 		let peer = <IPeer>JSON.parse(eventData[0]);
 		this.peers.push(peer);
 
 		this.log(`New peer: ${peer}`);
-	}
+	};
 
-	private handlePeerChanged(eventData: string[]): void {
+	private handlePeerChanged = (eventData: string[]): void => {
 		// TODO:
 
 		this.log(`Changed peer: ${eventData}`);
-	}
+	};
 
-	private handlePeerRemoved(eventData: string[]): void {
+	private handlePeerRemoved = (eventData: string[]): void => {
 		// TODO:
 
 		this.log(`Removed peer: ${eventData}`);
-	}
+	};
 
-	private handlePeerHeartBeat(eventData: string[]): void {
+	private handlePeerHeartBeat = (eventData: string[]): void => {
 		// TODO:
 
 		this.log(`Heartbeat: ${eventData}`);
-	}
+	};
 
 	/**
 	 * Handle Hello event from the remote peer
 	 * 
 	 * @param eventData List of peer'services 
 	 */
-	private handleHello(eventData: string[]): void {
+	private handleHello = (eventData: string[]): void => {
 		if (this.onHelloCallback) {
 			this.onHelloCallback(JSON.parse(eventData[0]));
-		}
-	}
+		}	
+	};
 
-	public eventHandler(event: string, eventData: string[]): boolean {
-		switch (event) {
-			case 'peerAdded':
-				this.handlePeerAdded(eventData);
-				return true;
-			case 'peerChanged':
-				this.handlePeerChanged(eventData);
-				return true;
-			case 'peerRemoved':
-				this.handlePeerRemoved(eventData);
-				return true;
-			case 'peerHeartBeat':
-				this.handlePeerHeartBeat(eventData);
-				return true;
-			case 'Hello':
-				this.handleHello(eventData);
-				return true;
-			default:
-				this.log(`No matching event handler: ${event}`);
-				return false;
+	public eventHandler = (event: IEvent): void => {
+		if (this._commandEmitter.emit(event.command, event.args)) {
+			this.log(`Command ${event.command} done`);
+		} else {
+			this.log(`Command ${event.command} unknown`);
 		}
-	}
+	};
 }

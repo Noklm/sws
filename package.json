@@ -4,6 +4,9 @@
 	"description": "VScode extension to help SWS developpers",
 	"version": "0.0.1",
 	"publisher": "JDE",
+	"repository": {
+		"url": "https://github.com/juliendland/sws"
+	},
 	"engines": {
 		"vscode": "^1.50.0"
 	},
@@ -151,7 +154,7 @@
 							"program": {
 								"type": "string",
 								"description": "Absolute path to a elf file.",
-								"default": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf"
+								"default": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf"
 							},
 							"atbackendHost": {
 								"type": "string",
@@ -176,10 +179,15 @@
 							"interface": {
 								"type": "string",
 								"description": "The debug interface used",
+								"enum": [
+									"UPDI",
+									"JTAG",
+									"SWD"
+								],
 								"default": "UPDI"
 							},
 							"interfaceProperties": {
-								"type": "any",
+								"type": "InterfaceType",
 								"description": "",
 								"default": {
 									"UpdiClock": 2000000,
@@ -266,7 +274,7 @@
 						"name": "Sws Debug",
 						"atbackendHost": "127.0.0.1",
 						"atbackendPort": 4710,
-						"program": "${workspaceFolder}/debug/TESTEUR_IR_PORTE_00_01.elf",
+						"program": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf",
 						"tool": "atmelice",
 						"device": "attiny817",
 						"interface": "UPDI",
@@ -314,22 +322,22 @@
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
-		"@types/mocha": "^8.0.3",
-		"@types/node": "^13.13.30",
-		"@types/vscode": "^1.50.0",
+		"@types/mocha": "^8.0.4",
+		"@types/node": "^14.14.7",
+		"@types/vscode": "^1.51.0",
 		"@typescript-eslint/eslint-plugin": "^2.30.0",
 		"@typescript-eslint/parser": "^2.30.0",
 		"eslint": "^6.8.0",
 		"glob": "^7.1.6",
 		"mocha": "^8.2.1",
-		"typescript": "^3.8.3",
+		"typescript": "^3.9.7",
 		"vscode-debugadapter-testsupport": "^1.42.0",
 		"vscode-test": "^1.4.1"
 	},
 	"dependencies": {
-		"@types/ws": "^7.2.9",
+		"@types/ws": "^7.4.0",
 		"vscode-debugadapter": "^1.42.1",
 		"vscode-debugprotocol": "^1.42.0",
-		"ws": "^7.3.1"
+		"ws": "^7.4.0"
 	}
 }

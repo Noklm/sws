@@ -2,7 +2,6 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IToolContext } from './itoolContext';
-import { ToolContext} from './toolContext';
 import { IToolListener } from './itoolListener';
 import {
 	IConnectionProperties,
@@ -13,12 +12,18 @@ import {
  * Class that describe the TCF Tool Service
  */
 export class ToolService extends AbstractService<IToolContext, IToolListener>{
+	public attachedTools: Array<ITool>;
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Tool', dispatcher);
+		this.attachedTools = new Array<ITool>();
+		this.dispatcher.eventHandler(this);
 	}
 
-	public attachedTools: Array<ITool> = new Array<ITool>();
+	public registerCommands() {
+		super.registerCommands();
+		this._commandEmitter.on('attachedToolsChanged', this.handleAttachedToolsChanged);
+	}
 
 	/**
 	 * Lists all atbackend supported tools as String
@@ -30,7 +35,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 
 		// TODO: Look how to catch rejected response
 		return new Promise<string[]>(function(resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'getSupportedToolTypes', []).then( (data: string) => {
+			self.dispatcher.sendCommand(self._name, 'getSupportedToolTypes', []).then( (data: string) => {
 				let supportedTools = <string[]>JSON.parse(data);
 				resolve(supportedTools);
 			}).catch(reject);
@@ -38,7 +43,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	}
 
 	public pollForTools(shouldPoll: boolean) {
-		this.dispatcher.sendCommand(this.getName(), 'pollForTools', [shouldPoll]);
+		this.dispatcher.sendCommand(this._name, 'pollForTools', [shouldPoll]);
 	}
 
 	/**
@@ -49,7 +54,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	public getAttachedTools(): Promise<ITool[]> {
 		let self = this;
 		return new Promise<ITool[]>(function (resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'getAttachedTools', [""]).then((data: string) => {
+			self.dispatcher.sendCommand(self._name, 'getAttachedTools', [""]).then((data: string) => {
 				let attachedTools:ITool[] = JSON.parse(data);
 				resolve(attachedTools);
 			}).catch(reject);
@@ -60,7 +65,7 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 		let self = this;
 
 		return new Promise<IToolContext>(function(resolve, reject) {
-			self.dispatcher.sendCommand(self.getName(), 'setupTool', [tool.ToolType, tool.ConnectionType, tool.ConnectionProperties]).then( (data: string) => {
+			self.dispatcher.sendCommand(self._name, 'setupTool', [tool.ToolType, tool.ConnectionType, tool.ConnectionProperties]).then( (data: string) => {
 				let context = JSON.parse(data);
 				self.getContext(context).then(resolve).catch(reject);
 			}).catch(reject);
@@ -68,47 +73,38 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	}
 
 	public connect(id: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'connect', [id]);
+		return this.dispatcher.sendCommand(this._name, 'connect', [id]);
 	}
 
 	public tearDownTool(id: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'tearDownTool', [id]);
-	}
-
-	public setProperties(contextId: string, properties: any): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
+		return this.dispatcher.sendCommand(this._name, 'tearDownTool', [id]);
 	}
 
 	public checkFirmware(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId]);
+		return this.dispatcher.sendCommand(this._name, 'checkFirmware', [contextId]);
+		
 	}
 
-	public eventHandler(event: string, eventData: string[]): boolean {
-		if (super.eventHandler(event, eventData)) {
-			return true;
-		}
-
-		switch (event) {
-			case 'attachedToolsChanged':
-				this.handleAttachedToolsChanged(eventData);
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	private handleAttachedToolsChanged(eventData: string[]): void {
+	private handleAttachedToolsChanged = (eventData: string[]): void => {
 		this.attachedTools = <ITool[]>JSON.parse(eventData[0]);
 		this.log(`AttachedToolsChanged: ${eventData}`);
-
 
 		this.listeners.forEach(listener => {
 			listener.attachedToolsChanged(this.attachedTools);
 		});
+	};
+
+
+	/**
+	 * 
+	 * @param contextId Tool Context ID
+	 * @param properties Properties to set
+	 */
+	public setProperties(contextId: string, properties: any): Promise<string> {
+		return this.dispatcher.sendCommand(this._name, 'setProperties', [contextId, properties]);
 	}
 
-	public fromJson(data: IToolContext): ToolContext {
-		let context = new ToolContext(data, this);
-		return context;
+	public getProperties(): Promise<any> {
+		return Promise.reject(Error('NOT IMPLEMENTED'));
 	}
 }

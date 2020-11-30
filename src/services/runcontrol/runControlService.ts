@@ -4,7 +4,6 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IRunControlContext } from './irunControlContext';
-import { RunControlContext } from './runControlContext';
 import { IRunControlListener } from './irunControlListener';
 import { ResumeMode } from './resumeMode';
 
@@ -13,48 +12,35 @@ export class RunControlService extends AbstractService<IRunControlContext, IRunC
 
 	public constructor(dispatcher: IDispatcher) {
 		super('RunControl', dispatcher);
+		this.dispatcher.eventHandler(this);
+	}
+
+	public registerCommands() {
+		super.registerCommands();
+		this._commandEmitter.on('contextSuspended', this.handleContextSuspended);
+		this._commandEmitter.on('contextResumed', this.handleContextResumed);
 	}
 
 	public resume(contextId: string, mode: ResumeMode, count?: number): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'resume', [contextId, mode, count as number | 0]);
+		if (!count) {
+			count = 0;
+		}
+		return this.dispatcher.sendCommand(this._name, 'resume', [contextId, mode, count]);
 	}
 
 	public suspend(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'suspend', [contextId]);
+		return this.dispatcher.sendCommand(this._name, 'suspend', [contextId]);
 	}
 
 	public terminate(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'terminate', [contextId]);
+		return this.dispatcher.sendCommand(this._name, 'terminate', [contextId]);
 	}
 
 	public detach(contextId: string): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'detach', [contextId]);
+		return this.dispatcher.sendCommand(this._name, 'detach', [contextId]);
 	}
 
-	public setProperties(contextId: string, properties: any): Promise<string> {
-		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
-	}
-
-
-	public eventHandler(event: string, eventData: string[]): boolean {
-		if (super.eventHandler(event, eventData)) {
-			return true;
-		}
-
-		switch (event) {
-			case 'contextSuspended':
-				this.handleContextSuspended(eventData);
-				return true;
-			case 'contextResumed':
-				this.handleContextResumed(eventData);
-				return true;
-			default:
-				this.log(`No matching event handler: ${event}`);
-				return false;
-		}
-	}
-
-	private handleContextSuspended(eventData: string[]): void {
+	private handleContextSuspended = (eventData: string[]): void => {
 		let id = JSON.parse(eventData[0]);
 		let pc = +JSON.parse(eventData[1]);
 		let reason = JSON.parse(eventData[2]);
@@ -65,9 +51,9 @@ export class RunControlService extends AbstractService<IRunControlContext, IRunC
 		this.listeners.forEach(listener => {
 			listener.contextSuspended(id, pc, reason, state);
 		});
-	}
+	};
 
-	private handleContextResumed(eventData: string[]): void {
+	private handleContextResumed = (eventData: string[]): void => {
 		let id = JSON.parse(eventData[0]);
 
 		this.log(`ContextResumed: ${id}`);
@@ -75,22 +61,13 @@ export class RunControlService extends AbstractService<IRunControlContext, IRunC
 		this.listeners.forEach(listener => {
 			listener.contextResumed(id);
 		});
+	};
+
+	public setProperties(contextId: string, properties: any): Promise<string> {
+		return this.dispatcher.sendCommand(this.getName(), 'setProperties', [contextId, properties]);
 	}
 
-	public fromJson(service: RunControlService, data: IRunControlContext): IRunControlContext {
-		let context = new RunControlContext();
-
-		context.runcontrolservice = service;
-
-		context.ID = data['ID'];
-		context.CanSuspend = data['CanSuspend'];
-		context.CanResume = data['CanResume'];
-		context.CanCount = data['CanCount'];
-		context.IsContainer = data['IsContainer'];
-		context.HasState = data['HasState'];
-		context.CanTerminate = data['CanTerminate'];
-
-		return context;
+	public getProperties(): Promise<any> {
+		return Promise.reject(Error('NOT IMPLEMENTED'));
 	}
-
 }
