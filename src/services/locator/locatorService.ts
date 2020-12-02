@@ -2,9 +2,15 @@
 
 import { EventEmitter } from 'events';
 import { IDispatcher } from './../abstractService';
-import { IEventHandler, IResponseHandler, IService, IEvent } from './../iservice';
+import { IService, IEvent } from './../iservice';
 import { IPeer } from './ipeer';
 
+/**
+ * TCF Locator service:
+ * 
+ * Searches for peers and to collect data about the peer's attributes and capabilities (services)
+ * This service is required
+ */
 export class LocatorService implements IService{
 
 	public peers: Array<IPeer> = new Array<IPeer>();
