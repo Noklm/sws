@@ -1,5 +1,5 @@
-import { window } from 'vscode';
 const path = require('path');
+import { window } from 'vscode';
 import {
     DebugSession,
     InitializedEvent,
@@ -22,17 +22,10 @@ import { IRunControlListener } from './services/runcontrol/irunControlListener';
 import { GotoMain } from './gotoMain';
 import {
     IToolContext, IToolProperties,
-    IProcessContext,
-    IRegisterContext,
     IRunControlContext,
     IStackTraceContext,
-    IBreakpointContext,
 } from './services/contexts';
 import { ResumeMode } from './services/runcontrol/resumeMode';
-import {
-    IConnectionProperties,
-    ITool
-} from './services/tool/itool';
 import {
     LocatorService,
     ToolService,
@@ -450,7 +443,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
                     children.forEach(expression => {
                         expressionService.getContext(expression.ID).then(async (expression) => {
-                            let variable: Variable = new Variable(expression.Expression, expression.Val.trim());
+                            let variable: any = new Variable(expression.Expression, expression.Val.trim());
                             variable.type = expression.Type;
 
                             if (expression.Numchildren !== 0) {
