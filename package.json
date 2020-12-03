@@ -8,7 +8,7 @@
 		"url": "https://github.com/juliendland/sws"
 	},
 	"engines": {
-		"vscode": "^1.50.0"
+		"vscode": "^1.51.1"
 	},
 	"categories": [
 		"Other"
@@ -313,6 +313,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
+		"vsix": "vsce package",
 		"compile": "tsc -p ./",
 		"pack": "vsce package",
 		"lint": "eslint src --ext ts",
