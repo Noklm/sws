@@ -29,6 +29,8 @@ Ces commandes de base sont gérées par le makefile.
 
   
 # SWS Debugger
+## Exemple
+![](images/example_sws.gif)
 ## Configuration du debugger
 ```JSON
 {
