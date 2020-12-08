@@ -394,6 +394,45 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         });
     }
 
+    /* Evaluate using the expression evaluator */
+    protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
+        let expressionsService = <ExpressionService>this.channel.getService('Expressions');
+        let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
+
+        let stackTraceContextId = this.hasher.retrieve(args.frameId!);
+
+        response.body = {
+            result: '',
+            type: '',
+            variablesReference: 0,
+            namedVariables: 0,
+            indexedVariables: 0
+        };
+
+        switch (args.context) {
+            case 'watch':
+            case 'hover':
+            case 'repl':
+            default:
+                stackTraceService.getContext(<string>stackTraceContextId).then(context => {
+                    expressionsService.compute(context, 'C', args.expression).then((expression) => {
+                        response.body.result = expression.Val.trim();
+                        response.body.type = expression.Type;
+
+                        expressionsService.dispose(expression.ID);
+
+                        this.sendResponse(response);
+                    }).catch((error: Error) => {
+                        console.log(error.message);
+                        response.body.result = error.message;
+                        response.body.type = 'Error';
+
+                        this.sendResponse(response);
+                    });
+                });
+        }
+    }
+
     /* Variables belong to a scope (which is created above) */
     protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments) {
 
@@ -473,7 +512,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             });            
         }
     }
-
+    
     /* Resume is any form of resume */
     private resume(mode: ResumeMode, threadID?: number): void {
         let runControlService = <RunControlService>this.channel.getService('RunControl');
