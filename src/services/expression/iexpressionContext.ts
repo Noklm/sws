@@ -22,7 +22,4 @@ export interface IExpressionContext extends IContext {
 	FormatString: string;
 	Type: string;
 	Size: number;
-
-	assign(value: string): Promise<string>;
-	dispose(): void;
 }
