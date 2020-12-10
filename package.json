@@ -20,7 +20,8 @@
 		"onCommand:sws.build",
 		"onCommand:sws.clean",
 		"onCommand:sws.flash",
-		"workspaceContains:**/src"
+		"workspaceContains:**/src",
+		"onLanguage:c"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -145,7 +146,10 @@
 		"debuggers": [
 			{
 				"type": "sws",
-				"label": "Sws Debug",
+				"label": "C (AVR-GDB)",
+				"languages": [
+					"c"
+				],
 				"configurationAttributes": {
 					"launch": {
 						"required": [
