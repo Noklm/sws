@@ -280,9 +280,9 @@
 						"atbackendHost": "127.0.0.1",
 						"atbackendPort": 4710,
 						"program": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf",
-						"tool": "atmelice",
-						"device": "attiny817",
-						"interface": "UPDI",
+						"tool": "${config:sws.config.TOOL}",
+						"device": "${config:sws.config.CORE}",
+						"interface": "${config:sws.config.INTERFACE}",
 						"interfaceProperties": {
 							"UpdiClock": 2000000,
 							"KeepTimersRunning": true
@@ -297,7 +297,7 @@
 						"useGdb": true,
 						"gdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
 						"bootSegment": 2,
-						"packPath": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc",
+						"packPath": "C:/toolchains/packs/atmel/${config:sws.config.PACK}/${config:sws.config.PACK_VERSION}/Atmel.${config:sws.config.PACK}.pdsc",
 						"noDebug": true
 					}
 				],
