@@ -69,35 +69,7 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 			this.debugLogger(`${data}\n\r`);
 		}
 	}
-	/**
-	 * Create a websocket client and connect it to the server via his host and port
-	 * 
-	 * @param callback calls when 'open' event is triggered
-	 */
-	// public connect(callback: (dispatcher: IDispatcher) => void): void {
-	// 	let url = 'ws://' + this.host + ':' + this.port;
-	// 	this.log(`[Dispatcher] Connect to: ${url}`);
 
-	// 	this.ws = new WebSocket(url);
-
-	// 	this.ws.on('error', (error) => {
-	// 		this.log(`[Dispatcher] WS:error: ${error}`);
-	// 		throw error;
-	// 	});
-
-	// 	this.ws.on('close', (code, message) => {
-	// 		this.log(`[Dispatcher] WS:close: ${code} => ${message}`);
-	// 	});
-
-	// 	this.ws.on('message', (data: string, flags: { binary: boolean }) => {
-	// 		this.handleMessage(data);
-	// 	});
-
-	// 	this.ws.on('open', () => {
-	// 		callback(this);
-	// 	});
-
-	// }
 	/**
 	 * Displays nil (null string) (\u0000) and eom (end of message) (\u0003\u0001) values in a string message
 	 * 
@@ -123,6 +95,7 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 		}
 		return ret;
 	}
+
 	/**
 	 * Register an event handler by his service name
 	 * 
@@ -143,6 +116,7 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 	public progressHandler(handler: IProgressEventHandler): void {
 		this.progressHandlers.push(handler);
 	}
+
 	/**
 	 * Register a congestion handler
 	 *
@@ -191,6 +165,7 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 		let self = this;
 		this.sendMessage(`E${self.nil}${serviceName}${self.nil}${eventName}${self.nil}${self.stringify(args)}${self.eom}`);
 	}
+
 	/**
 	 * Stringify objects to be send over websocket
 	 * 
@@ -205,11 +180,6 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 		}).join('');
 
 		return str;
-	}
-
-	
-	private unstringify(data: string): any {
-		return JSON.parse(data);;
 	}
 
 	/**
@@ -285,8 +255,6 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 		} else {
 			this.debug(`[Dispatcher] Event listener for ${serviceName} is not registered`);
 		}
-			
-		
 	}
 
 	/**
