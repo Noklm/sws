@@ -201,52 +201,54 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
      */
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
 
-        this._dispatcher.progressHandler(new ProgressReporter('Launcher',this));
+        this._dispatcher.progressHandler(new ProgressReporter('Launcher', this));
+        
+        // If TCF channel not opened after 1s timeout stop launching
+        if (this._locator.isChannelOpened) {
+            this._processes.addListener(new GotoMain(this));
+            /* Once a device has been instantiated, we need to actually launch with a module */
+            this._device.addListener(new ProcessLauncher(args.program, this._processes, args));
+            this._runControl.addListener(this);
 
+            // Connects with a debug tool (atmelice, nedbg, ...)
+            const attachedTools: ITool[] = await (await this._tool.getAttachedTools()).filter((tool: ITool) => {
+                return tool.ToolType === args.tool;
+            });
+            let toolContext: IToolContext;
+            // TODO: Maybe to do in tool service
+            if (attachedTools.length === 1) {
+                toolContext = await this._tool.setupTool(attachedTools.pop()!);
+            } else if (attachedTools.length === 0) {
+                window.showErrorMessage(`No tool of type: ${args.tool}`);
+                this.sendEvent(new TerminatedEvent());
+                return;
+            } else {
+                window.showErrorMessage(`${attachedTools.length} tools of type ${args.tool}`);
+                this.sendEvent(new TerminatedEvent());
+                return;
+            }
 
-        // Starts TCF Channel
-        this._locator.hello(['Locator']);
+            await this._tool.connect(toolContext.ID);
+            await this._tool.checkFirmware(toolContext.ID);
+            let properties: IToolProperties = {
+                InterfaceName: args.interface,
+                PackPath: args.packPath,
+                DeviceName: args.device,
+                InterfaceProperties: args.interfaceProperties
+            };
+            await this._tool.setProperties(toolContext.ID, properties);
 
-        this._processes.addListener(new GotoMain(this));
-        /* Once a device has been instantiated, we need to actually launch with a module */
-        this._device.addListener(new ProcessLauncher(args.program, this._processes, args));
-        this._runControl.addListener(this);
+            if (!args.noDebug) {
+                this._stream.setLogBits(0xFFFFFFFF);
+            }
 
-        // Connects with a debug tool (atmelice, nedbg, ...)
-        const attachedTools: ITool[] = await (await this._tool.getAttachedTools()).filter((tool: ITool) => {
-            return tool.ToolType === args.tool;
-        });
-        let toolContext: IToolContext;
-        // TODO: Maybe to do in tool service
-        if (attachedTools.length === 1) {
-            toolContext = await this._tool.setupTool(attachedTools.pop()!);
-        } else if (attachedTools.length === 0){
-            window.showErrorMessage(`No tool of type: ${args.tool}`);
-            this.sendEvent(new TerminatedEvent());
-            return;
-        } else {
-            window.showErrorMessage(`${attachedTools.length} tools of type ${args.tool}`);
-            this.sendEvent(new TerminatedEvent());
+            /* Once a device has been instantiated, we need to actually launch with a module */
+            this._device.addListener(new ProcessLauncher(args.program, this._processes, args));
+            this.sendResponse(response);
             return;
         }
-
-        await this._tool.connect(toolContext.ID);
-        await this._tool.checkFirmware(toolContext.ID);
-        let properties: IToolProperties = {
-            InterfaceName: args.interface,
-            PackPath: args.packPath,
-            DeviceName: args.device,
-            InterfaceProperties: args.interfaceProperties
-        };
-        await this._tool.setProperties(toolContext.ID, properties);
-
-        if(!args.noDebug) {
-            this._stream.setLogBits(0xFFFFFFFF);
-        }
-            
-        /* Once a device has been instantiated, we need to actually launch with a module */
-        this._device.addListener(new ProcessLauncher(args.program, this._processes, args));
-        this.sendResponse(response);
+        window.showErrorMessage(`TCF channel not opened`);
+        this.sendEvent(new TerminatedEvent());
         
     }
     private activeBreakpointIds = new Array<string>();

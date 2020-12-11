@@ -11,18 +11,17 @@ import { IPeer } from './ipeer';
  * Searches for peers and to collect data about the peer's attributes and capabilities (services)
  * This service is required
  */
-export class LocatorService implements IService{
+export class LocatorService extends EventEmitter implements IService{
 
 	public peers: Array<IPeer> = new Array<IPeer>();
-	private onHelloCallback!: (remoteServices:string[]) => void;
 	private dispatcher: IDispatcher;
 	private name = 'Locator';
-	private _commandEmitter: EventEmitter;
+	public isChannelOpened: boolean;
 	private _remoteServices: Array<string> | undefined;
-
 	public constructor(dispatcher: IDispatcher) {
+		super();
+		this.isChannelOpened = false;
 		this.dispatcher = dispatcher;
-		this._commandEmitter = new EventEmitter();
 		this.dispatcher.eventHandler(this);
 		this._remoteServices = undefined;
 	}
@@ -43,21 +42,11 @@ export class LocatorService implements IService{
 	}
 
 	public registerCommands() {
-		this._commandEmitter.on('Hello', this.handleHello);
-		this._commandEmitter.on('peerAdded', this.handlePeerAdded);
-		this._commandEmitter.on('peerChanged', this.handlePeerChanged);
-		this._commandEmitter.on('peerRemoved', this.handlePeerRemoved);
-		this._commandEmitter.on('peerHeartBeat', this.handlePeerHeartBeat);
-	}
-
-	/**
-	 * Sends our Hello event with DA services and register a callback when Hello event from the remote peer
-	 * 
-	 * @param callback Callback used when the hello event is received
-	 */
-	public hello(localServices: string[], callback?: (remoteServices: string[]) => void): void {
-		// TODO: hello need to notify if TCF channel is connected
-		this.dispatcher.sendEvent(this.name, 'Hello', [localServices]);
+		this.on('Hello', this.handleHello);
+		this.on('peerAdded', this.handlePeerAdded);
+		this.on('peerChanged', this.handlePeerChanged);
+		this.on('peerRemoved', this.handlePeerRemoved);
+		this.on('peerHeartBeat', this.handlePeerHeartBeat);
 	}
 
 	/**
@@ -97,10 +86,12 @@ export class LocatorService implements IService{
 	 */
 	private handleHello = (eventData: string[]): void => {
 		this._remoteServices = JSON.parse(eventData[0]);
+		this.dispatcher.sendEvent(this.name, 'Hello', [[this.name]]);
+		this.isChannelOpened = true;
 	};
 
 	public eventHandler = (event: IEvent): void => {
-		if (this._commandEmitter.emit(event.command, event.args)) {
+		if (this.emit(event.command, event.args)) {
 			this.log(`Command ${event.command} done`);
 		} else {
 			this.log(`Command ${event.command} unknown`);
