@@ -15,7 +15,8 @@ Elle permettrait de developper des nouveaux firmwares sans dépendances avec des
 | PACK_VERSION | Numéro de version du pack atmel                         |
 | TARGET       | Projet swing (IR_3D, IR_PORTE, ...)                     |
 | TOOL         | Outil de programmation (atmelice, avrdragon, nedbg,...) |
-
+| internal     | Laisser SWS démarrer ATBackend                          |
+| Port         | Port de communication entre ATBackend et SWS            |
 
 ## Commandes de base:
 Ces commandes de base sont gérées par le makefile.  
@@ -29,16 +30,20 @@ Ces commandes de base sont gérées par le makefile.
 
   
 # SWS Debugger
-## Exemple
-![](images/example_sws.gif)
-## Configuration du debugger
+## Exemples d'utilisation
+
+## Configuration typique (launch.json)
+Avant de pouvoir débugger avec l'extension il vous faudra une configuration contenu dans un fichier nommé launch.json dans le dossier .vscode
+
+Si ce fichier n'existe pas il est automatiquement créer en passant par l'onglet "Run and Debug" et en cliquant sur "créer un fichier launch.json" ensuite il vous faudra choisir l'environnement de débug: choisissez "C (AVR-GDB)". Le fichier sera automatiquement généré. La plupart des paramètres n'ont pas besoin d'être modifiés: ils sont liés aux settings que vous avez rentrés pour l'extension SWS, libre à vous de les modifier.
+
+Si un launch.json existe déjà et qu'aucune configuration ne correspond à "C (AVR-GDB)" cliquer sur le bouton "ajouter une configuration" dans le fichier.
+
 ```JSON
 {
     "type": "sws",
     "request": "launch",
     "name": "Sws Debug",
-    "atbackendHost": "127.0.0.1",
-    "atbackendPort": 4710,
     "program": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf",
     "tool": "atmelice",
     "device": "attiny817",
@@ -57,10 +62,16 @@ Ces commandes de base sont gérées par le makefile.
     "useGdb": true,
     "gdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
     "bootSegment": 2,
-    "packPath": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc",
+    "packPath": "C:/toolchains/packs/atmel/ATtiny_DFP/1.2.56/Atmel.ATtiny_DFP.pdsc",
     "noDebug": true
 }
 ```
+### Lancer une session de debug
+Une fois votre configuration paramétrée cliquez sur le bouton play ou F5 pour démarrer votre session de débug, comme le montre le GIF ci-dessous.
+
+Au démarrage l'éxécution du programme sera directement stoppée au début du main.
+
+![](images/example_sws.gif)
 
 ## Description des paramètres:
 
@@ -69,8 +80,6 @@ Ces commandes de base sont gérées par le makefile.
 | type                | Type de la session de debug, laisser sws                     |
 | request             | Laisser launch pour lancer une session de debug "sws"        |
 | name                | Nom de la session affiché dans VSCode                        |
-| atbackendHost       | Addresse websocket d'ATBackend                               |
-| atbackendPort       | Port d'ATBackend                                             |
 | program             | Binaire à debugger (.elf)                                    |
 | tool                | Outil de programmation (atmelice, avrdragon, nedbg,...)      |
 | device              | Micro-contrôleur (attiny817, avr128da48, atmega644p)         |
@@ -87,9 +96,25 @@ Ces commandes de base sont gérées par le makefile.
 | gdbLocation         | Chemin vers GDB                                              |
 | bootSegment         | Préserve l'eeprom lorsque vous demarrez une session de debug |
 | packPath            | Chemin vers le pack atmel (.pdsc) du mico-contrôleur         |
+
+Certain microcontroleur, comme l'atmega644, ne possède pas de pack c'est une nouveauté pour donner des détails sur l'architecture mémoire du micro.
+
 # Release Notes
 
 ## 0.0.1
 Implémentation des commandes de base de l'extension: compiler, programmer.
-### 0.0.2 
+
+### 1.0.0
 Création du "debug adapter" permettant de debugger n'importe quel microcontrôleur Atmel.
+Le DA permet de communiquer avec ATBackend afin de connaitre l'état du microcontroleur durant l'exécution d'un processus par ce dernier.
+
+Cette extension vous permet de:
+* Mettre en pause l'éxécution du processus sur l'AVR
+* Poser des points d'arrêt dans votre fichier source (.c)
+* Avancer step by step dans le programme
+* Avancer jusqu'à la fin d'une fonction
+* Afficher les appels à la stack dans l'espace "call stack"
+* Lire et afficher les registres dans l'espace "variables"
+* Voir les variables locales de chaque stack frame
+* Afficher chaque champ d'une structure
+* Suivre l'évolution d'une variable globale dans l'espace "watch"
