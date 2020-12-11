@@ -9,5 +9,4 @@ export interface IDispatcher {
 	progressHandler(handler: IProgressEventHandler): void
 
 	log(data: string): void;
-	debug(data: string): void;
 }

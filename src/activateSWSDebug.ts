@@ -14,13 +14,9 @@ class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory 
         const atbackend: ChildProcessWithoutNullStreams = spawn('C:\\Program Files (x86)\\Atmel\\Studio\\7.0\\atbackend\\atbackend.exe', [`/websocket-port=${atbackendConf.get('port')}`]);
         // TODO: supprimer de delay de 1s et trouver un moyen de demarrer une debug sessions quand atbackend et le dispatcher sont lies
         await new Promise(resolve => setTimeout(resolve, 1000));
-        const dispatcher = new WebsocketDispatcher('127.0.0.1', <number>atbackendConf.get('port'),
-        (message: string) => {
-            console.log(message);
-        },
-        (message: string) => {
-            console.log(message);
-        });
+        const dispatcher = new WebsocketDispatcher('127.0.0.1', <number>atbackendConf.get('port'), console.log);
+        
+      
         return new vscode.DebugAdapterInlineImplementation(new SwsDebugSession(atbackend, dispatcher));
     }
 }

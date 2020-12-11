@@ -23,17 +23,13 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 
 
 	private logger?: (message: string) => void;
-	private debugLogger?: (message: string) => void;
 
-	public constructor(host: string, port: number, logger?: (message: string) => void, debugLogger?: (message: string) => void) {
+	public constructor(host: string, port: number, logger?: (message: string) => void) {
 		super(`ws://${host}:${port}`);
 		this.sendToken = 1;
 
 		if (logger) {
 			this.logger = logger;
-		}
-		if (debugLogger) {
-			this.debugLogger = debugLogger;
 		}
 
 		this.on('error', (error) => {
@@ -61,12 +57,6 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 		}
 		else {
 			console.error(`${data}\n\r`);
-		}
-	}
-
-	public debug(data: string): void {
-		if (this.debugLogger) {
-			this.debugLogger(`${data}\n\r`);
 		}
 	}
 
@@ -132,7 +122,7 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 	 * @param message message to send
 	 */
 	private sendMessage(message: string): void {
-		this.debug(`>> ${this.escapeNil(message)}`);
+		this.log(`>> ${this.escapeNil(message)}`);
 		this.send(message);
 	}
 
@@ -204,7 +194,7 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 	private handleMessage(data: string): void {
 		let self = this;
 
-		this.debug(`<< ${self.escapeNil(data)}`);
+		this.log(`<< ${self.escapeNil(data)}`);
 
 		let elements = data.split(self.nil);
 
@@ -251,9 +241,9 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 			args: data
 		};
 		if (this.emit(serviceName, event)) {
-			this.debug(`[Dispatcher] Event sends for ${serviceName}`);
+			this.log(`[Dispatcher] Event sends for ${serviceName}`);
 		} else {
-			this.debug(`[Dispatcher] Event listener for ${serviceName} is not registered`);
+			this.log(`[Dispatcher] Event listener for ${serviceName} is not registered`);
 		}
 	}
 
