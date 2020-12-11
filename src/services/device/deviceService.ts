@@ -8,7 +8,6 @@ export class DeviceService extends AbstractService<IDeviceContext, IDeviceListen
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Device', dispatcher);
-		this.dispatcher.eventHandler(this);
 	}
 
 	public setProperties(contextId: string, properties: any): Promise<string> {

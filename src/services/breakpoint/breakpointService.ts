@@ -15,7 +15,6 @@ export class BreakpointsService extends AbstractService<IBreakpointContext, IBre
 	public constructor(dispatcher: IDispatcher) {
 		super('Breakpoints', dispatcher);
 		this.contextCounter = 0;
-		this.dispatcher.eventHandler(this);
 	}
 
 	public add(parameters: any): Promise<string> {

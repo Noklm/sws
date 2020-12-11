@@ -2,7 +2,6 @@
 
 export interface IService extends IEventHandler {
 	getName(): string;
-	registerCommands(): void;
 }
 
 export interface IEventHandler {

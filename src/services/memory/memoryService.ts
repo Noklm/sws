@@ -11,7 +11,7 @@ export class MemoryService extends AbstractService<IMemoryContext, IMemoryListen
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Memory', dispatcher);
-		this.dispatcher.eventHandler(this);
+		this._commandEmitter.on('memoryChanged', this.handleMemoryChanged);
 	}
 
 	public getChildren(context: IMemoryContext) {
@@ -24,11 +24,6 @@ export class MemoryService extends AbstractService<IMemoryContext, IMemoryListen
 
 	public getMemory(context: IMemoryContext, address: number, wordSize: number, byteCount: number, mode: SetMode): void {
 
-	}
-
-	public registerCommands() {
-		super.registerCommands();
-		this._commandEmitter.on('memoryChanged', this.handleMemoryChanged);
 	}
 
 	public setProperties(properties: any): Promise<any> {

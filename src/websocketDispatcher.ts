@@ -84,18 +84,6 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 	}
 
 	/**
-	 * Register an event handler by his service name
-	 * 
-	 * @param service name of the TCF service 
-	 * @param handler TCF Service class that implements IEventHandler
-	 */
-	public eventHandler(service: IService): void {
-		this.log(`[Dispatcher] Registering event handler for ${service.getName()}`);
-		service.registerCommands();
-		this.on(service.getName(), service.eventHandler);
-	}
-
-	/**
 	 * Register a progress handler
 	 *
 	 * @param handler TCF Service class that implements IProgressEventHandler

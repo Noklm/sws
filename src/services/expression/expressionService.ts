@@ -11,7 +11,6 @@ export class ExpressionService extends AbstractService<IExpressionContext, IExpr
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Expressions', dispatcher);
-		this.dispatcher.eventHandler(this);
 	}
 
 	public getChildren(parentContext: string): Promise<IExpressionContext[]> {

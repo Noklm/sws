@@ -12,14 +12,11 @@ export class StreamService implements IEventHandler, IService {
 	public constructor(dispatcher: IDispatcher) {
 		this.name = 'Stream';
 		this.dispatcher = dispatcher;
-		this.dispatcher.eventHandler(this);
+		this.dispatcher.on(this.name, this.eventHandler);
 	}
 
 	public getName() {
 		return this.name;
-	}
-	
-	public registerCommands() {
 	}
 
 	public setLogBits(level: number): Promise<string> {

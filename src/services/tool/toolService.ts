@@ -17,11 +17,6 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	public constructor(dispatcher: IDispatcher) {
 		super('Tool', dispatcher);
 		this.attachedTools = new Array<ITool>();
-		this.dispatcher.eventHandler(this);
-	}
-
-	public registerCommands() {
-		super.registerCommands();
 		this._commandEmitter.on('attachedToolsChanged', this.handleAttachedToolsChanged);
 	}
 

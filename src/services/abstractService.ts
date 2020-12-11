@@ -19,8 +19,14 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		this._name = name;
 		this._commandEmitter = new EventEmitter();
 		this.dispatcher = dispatcher;
+		this.dispatcher.on(this._name, this.eventHandler);
 		this.contexts = new Map<string, TContext>();
 		this.listeners = new Array<TListener>();
+
+		// Register event that are handled by all services that extends abstract service
+		this._commandEmitter.on('contextAdded', this.handleContextAdded);
+		this._commandEmitter.on('contextChanged', this.handleContextChanged);
+		this._commandEmitter.on('contextRemoved', this.handleContextRemoved);
 	}
 
 	/**
@@ -30,14 +36,14 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		return this._name;
 	}
 
-	/**
-	 * All services implement commands, overload this method if more commands are available for the service
-	 */
-	public registerCommands() {
-		this._commandEmitter.on('contextAdded', this.handleContextAdded);
-		this._commandEmitter.on('contextChanged', this.handleContextChanged);
-		this._commandEmitter.on('contextRemoved', this.handleContextRemoved);
-	}
+	// /**
+	//  * All services implement commands, overload this method if more commands are available for the service
+	//  */
+	// public registerCommands() {
+	// 	this._commandEmitter.on('contextAdded', this.handleContextAdded);
+	// 	this._commandEmitter.on('contextChanged', this.handleContextChanged);
+	// 	this._commandEmitter.on('contextRemoved', this.handleContextRemoved);
+	// }
 
 	protected log(message: string): void {
 		this.dispatcher.log(`[${this._name}] ${message}`);

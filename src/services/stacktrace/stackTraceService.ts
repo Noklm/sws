@@ -12,7 +12,6 @@ export class StackTraceService extends AbstractService<IStackTraceContext, IStac
 
 	public constructor(dispatcher: IDispatcher) {
 		super('StackTrace', dispatcher);
-		this.dispatcher.eventHandler(this);
 	}
 
 	public async getChildren(parentContext: string): Promise<IStackTraceContext[]> {

@@ -18,12 +18,20 @@ export class LocatorService extends EventEmitter implements IService{
 	private name = 'Locator';
 	public isChannelOpened: boolean;
 	private _remoteServices: Array<string> | undefined;
+
 	public constructor(dispatcher: IDispatcher) {
 		super();
 		this.isChannelOpened = false;
 		this.dispatcher = dispatcher;
-		this.dispatcher.eventHandler(this);
+		this.dispatcher.on(this.name, this.eventHandler);
 		this._remoteServices = undefined;
+
+		// Register all events handled by this service
+		this.on('Hello', this.handleHello);
+		this.on('peerAdded', this.handlePeerAdded);
+		this.on('peerChanged', this.handlePeerChanged);
+		this.on('peerRemoved', this.handlePeerRemoved);
+		this.on('peerHeartBeat', this.handlePeerHeartBeat);
 	}
 
 	private log(message: string): void {
@@ -42,11 +50,7 @@ export class LocatorService extends EventEmitter implements IService{
 	}
 
 	public registerCommands() {
-		this.on('Hello', this.handleHello);
-		this.on('peerAdded', this.handlePeerAdded);
-		this.on('peerChanged', this.handlePeerChanged);
-		this.on('peerRemoved', this.handlePeerRemoved);
-		this.on('peerHeartBeat', this.handlePeerHeartBeat);
+
 	}
 
 	/**

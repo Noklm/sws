@@ -10,11 +10,6 @@ export class RegisterService extends AbstractService<IRegisterContext, IRegister
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Registers', dispatcher);
-		this.dispatcher.eventHandler(this);
-	}
-
-	public registerCommands() {
-		super.registerCommands();
 		this._commandEmitter.on('registerChanged', this.handleRegisterChanged);
 	}
 

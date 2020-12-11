@@ -18,14 +18,6 @@ export class ProcessService extends AbstractService<IProcessContext, IProcessLis
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Processes', dispatcher);
-		this.dispatcher.eventHandler(this);
-	}
-
-	/**
-	 * Register Processes'specific events
-	 */
-	public registerCommands() {
-		super.registerCommands();
 		this._commandEmitter.on('exited', this.handleExited);
 	}
 

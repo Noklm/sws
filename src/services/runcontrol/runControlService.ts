@@ -12,11 +12,6 @@ export class RunControlService extends AbstractService<IRunControlContext, IRunC
 
 	public constructor(dispatcher: IDispatcher) {
 		super('RunControl', dispatcher);
-		this.dispatcher.eventHandler(this);
-	}
-
-	public registerCommands() {
-		super.registerCommands();
 		this._commandEmitter.on('contextSuspended', this.handleContextSuspended);
 		this._commandEmitter.on('contextResumed', this.handleContextResumed);
 	}
