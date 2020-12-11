@@ -1,6 +1,5 @@
 'use strict';
 
-import { EventEmitter } from 'events';
 import * as WebSocket from 'ws';
 import { IDispatcher } from './IDispatcher';
 import { IProgressEventHandler, ICongestionHandler, IService } from './services/iservice';
@@ -11,12 +10,7 @@ import { IProgressEventHandler, ICongestionHandler, IService } from './services/
  * from a remote websocket server.
  * All is dispatch to handlers (TCF Services) to be handle
  */
-export class WebsocketDispatcher implements IDispatcher {
-
-	private ws?: WebSocket;
-
-	private host: string;
-	private port: number;
+export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 
 	private sendToken: number;
 
@@ -27,15 +21,13 @@ export class WebsocketDispatcher implements IDispatcher {
 	private progressHandlers = new Array<IProgressEventHandler>();
 	private congestionHandlers = new Array<ICongestionHandler>();
 
-	private eventEmitter: EventEmitter;
+
 	private logger?: (message: string) => void;
 	private debugLogger?: (message: string) => void;
 
 	public constructor(host: string, port: number, logger?: (message: string) => void, debugLogger?: (message: string) => void) {
+		super(`ws://${host}:${port}`);
 		this.sendToken = 1;
-		this.eventEmitter = new EventEmitter();
-		this.host = host;
-		this.port = port;
 
 		if (logger) {
 			this.logger = logger;
@@ -43,6 +35,24 @@ export class WebsocketDispatcher implements IDispatcher {
 		if (debugLogger) {
 			this.debugLogger = debugLogger;
 		}
+
+		this.on('error', (error) => {
+			this.log(`[Dispatcher] WS:error: ${error}`);
+			throw error;
+		});
+
+		this.on('close', (code, message) => {
+			this.log(`[Dispatcher] WS:close: ${code} => ${message}`);
+		});
+
+		this.on('message', (data: string, flags: { binary: boolean }) => {
+			this.handleMessage(data);
+		});
+
+		this.on('open', () => {
+			this.log(`[Dispatcher] WS:opened`);
+		});
+
 	}
 
 	public log(data: string): void {
@@ -64,30 +74,30 @@ export class WebsocketDispatcher implements IDispatcher {
 	 * 
 	 * @param callback calls when 'open' event is triggered
 	 */
-	public connect(callback: (dispatcher: IDispatcher) => void): void {
-		let url = 'ws://' + this.host + ':' + this.port;
-		this.log(`[Dispatcher] Connect to: ${url}`);
+	// public connect(callback: (dispatcher: IDispatcher) => void): void {
+	// 	let url = 'ws://' + this.host + ':' + this.port;
+	// 	this.log(`[Dispatcher] Connect to: ${url}`);
 
-		this.ws = new WebSocket(url);
+	// 	this.ws = new WebSocket(url);
 
-		this.ws.on('error', (error) => {
-			this.log(`[Dispatcher] WS:error: ${error}`);
-			throw error;
-		});
+	// 	this.ws.on('error', (error) => {
+	// 		this.log(`[Dispatcher] WS:error: ${error}`);
+	// 		throw error;
+	// 	});
 
-		this.ws.on('close', (code, message) => {
-			this.log(`[Dispatcher] WS:close: ${code} => ${message}`);
-		});
+	// 	this.ws.on('close', (code, message) => {
+	// 		this.log(`[Dispatcher] WS:close: ${code} => ${message}`);
+	// 	});
 
-		this.ws.on('message', (data: string, flags: { binary: boolean }) => {
-			this.handleMessage(data);
-		});
+	// 	this.ws.on('message', (data: string, flags: { binary: boolean }) => {
+	// 		this.handleMessage(data);
+	// 	});
 
-		this.ws.on('open', () => {
-			callback(this);
-		});
+	// 	this.ws.on('open', () => {
+	// 		callback(this);
+	// 	});
 
-	}
+	// }
 	/**
 	 * Displays nil (null string) (\u0000) and eom (end of message) (\u0003\u0001) values in a string message
 	 * 
@@ -122,7 +132,7 @@ export class WebsocketDispatcher implements IDispatcher {
 	public eventHandler(service: IService): void {
 		this.log(`[Dispatcher] Registering event handler for ${service.getName()}`);
 		service.registerCommands();
-		this.eventEmitter.on(service.getName(), service.eventHandler);
+		this.on(service.getName(), service.eventHandler);
 	}
 
 	/**
@@ -149,10 +159,7 @@ export class WebsocketDispatcher implements IDispatcher {
 	 */
 	private sendMessage(message: string): void {
 		this.debug(`>> ${this.escapeNil(message)}`);
-
-		if (this.ws) {
-			this.ws.send(message);
-		}
+		this.send(message);
 	}
 
 	/**
@@ -273,7 +280,7 @@ export class WebsocketDispatcher implements IDispatcher {
 			command: data.shift() as string,
 			args: data
 		};
-		if (this.eventEmitter.emit(serviceName, event)) {
+		if (this.emit(serviceName, event)) {
 			this.debug(`[Dispatcher] Event sends for ${serviceName}`);
 		} else {
 			this.debug(`[Dispatcher] Event listener for ${serviceName} is not registered`);

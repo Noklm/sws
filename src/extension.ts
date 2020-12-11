@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 	activateSWSDebug(context);
 
 	const activateSWSTerminal = (e?: vscode.ConfigurationChangeEvent) => {
-		const compiler = vscode.workspace.getConfiguration('sws');
+		const compiler = vscode.workspace.getConfiguration('sws.config');
 		// for (let key in config.config) {
 		// 	console.log(key);
 		// 	console.log(`${config.get(`config.${key}`)}`);

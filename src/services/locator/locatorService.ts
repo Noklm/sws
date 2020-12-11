@@ -14,16 +14,17 @@ import { IPeer } from './ipeer';
 export class LocatorService implements IService{
 
 	public peers: Array<IPeer> = new Array<IPeer>();
-
 	private onHelloCallback!: (remoteServices:string[]) => void;
 	private dispatcher: IDispatcher;
 	private name = 'Locator';
-	private _commandEmitter : EventEmitter; 
+	private _commandEmitter: EventEmitter;
+	private _remoteServices: Array<string> | undefined;
 
 	public constructor(dispatcher: IDispatcher) {
 		this.dispatcher = dispatcher;
 		this._commandEmitter = new EventEmitter();
 		this.dispatcher.eventHandler(this);
+		this._remoteServices = undefined;
 	}
 
 	private log(message: string): void {
@@ -54,11 +55,9 @@ export class LocatorService implements IService{
 	 * 
 	 * @param callback Callback used when the hello event is received
 	 */
-	public hello(localServices: string[], callback?: (remoteServices:string[]) => void): void {
+	public hello(localServices: string[], callback?: (remoteServices: string[]) => void): void {
+		// TODO: hello need to notify if TCF channel is connected
 		this.dispatcher.sendEvent(this.name, 'Hello', [localServices]);
-		if (callback) {
-			this.onHelloCallback = callback;
-		}
 	}
 
 	/**
@@ -97,9 +96,7 @@ export class LocatorService implements IService{
 	 * @param eventData List of peer'services 
 	 */
 	private handleHello = (eventData: string[]): void => {
-		if (this.onHelloCallback) {
-			this.onHelloCallback(JSON.parse(eventData[0]));
-		}	
+		this._remoteServices = JSON.parse(eventData[0]);
 	};
 
 	public eventHandler = (event: IEvent): void => {

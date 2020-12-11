@@ -20,7 +20,8 @@
 		"onCommand:sws.build",
 		"onCommand:sws.clean",
 		"onCommand:sws.flash",
-		"workspaceContains:**/src"
+		"workspaceContains:**/src",
+		"onLanguage:c"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -94,6 +95,18 @@
 					],
 					"default": "atmelice",
 					"description": "The tool used to flash the chip"
+				},
+				"sws.atbackend.port": {
+					"type": "number",
+					"scope": "machine-overridable",
+					"default": "4710",
+					"description": "The port on which atbackend will communicate"
+				},
+				"sws.atbackend.internal": {
+					"type": "boolean",
+					"scope": "machine-overridable",
+					"default": "true",
+					"description": "Keep true if you don't want to launch atbackend yourself"
 				}
 			}
 		},
@@ -145,7 +158,10 @@
 		"debuggers": [
 			{
 				"type": "sws",
-				"label": "Sws Debug",
+				"label": "C (AVR-GDB)",
+				"languages": [
+					"c"
+				],
 				"configurationAttributes": {
 					"launch": {
 						"required": [
@@ -273,12 +289,10 @@
 						"type": "sws",
 						"request": "launch",
 						"name": "Sws Debug",
-						"atbackendHost": "127.0.0.1",
-						"atbackendPort": 4710,
 						"program": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf",
-						"tool": "atmelice",
-						"device": "attiny817",
-						"interface": "UPDI",
+						"tool": "${config:sws.config.TOOL}",
+						"device": "${config:sws.config.CORE}",
+						"interface": "${config:sws.config.INTERFACE}",
 						"interfaceProperties": {
 							"UpdiClock": 2000000,
 							"KeepTimersRunning": true
@@ -293,7 +307,7 @@
 						"useGdb": true,
 						"gdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
 						"bootSegment": 2,
-						"packPath": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc",
+						"packPath": "C:/toolchains/packs/atmel/${config:sws.config.PACK}/${config:sws.config.PACK_VERSION}/Atmel.${config:sws.config.PACK}.pdsc",
 						"noDebug": true
 					}
 				],
