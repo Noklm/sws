@@ -95,6 +95,18 @@
 					],
 					"default": "atmelice",
 					"description": "The tool used to flash the chip"
+				},
+				"sws.atbackend.port": {
+					"type": "number",
+					"scope": "machine-overridable",
+					"default": "4710",
+					"description": "The port on which atbackend will communicate"
+				},
+				"sws.atbackend.internal": {
+					"type": "boolean",
+					"scope": "machine-overridable",
+					"default": "true",
+					"description": "Keep true if you don't want to launch atbackend yourself"
 				}
 			}
 		},
@@ -277,8 +289,6 @@
 						"type": "sws",
 						"request": "launch",
 						"name": "Sws Debug",
-						"atbackendHost": "127.0.0.1",
-						"atbackendPort": 4710,
 						"program": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf",
 						"tool": "${config:sws.config.TOOL}",
 						"device": "${config:sws.config.CORE}",
