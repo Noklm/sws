@@ -45,6 +45,8 @@ import { NumericalHashCode } from './numericalHashCode';
 import { Channel } from './channel/channel';
 import { ProcessLauncher } from './processLauncher';
 import { ProgressReporter } from './progressReporter';
+import { ChildProcessWithoutNullStreams } from 'child_process';
+import { ITool } from './services/tool/itool';
 
 /**
  * Creates a new debug adapter that is used for one debug session.
@@ -52,16 +54,47 @@ import { ProgressReporter } from './progressReporter';
  */
 export class SwsDebugSession extends DebugSession implements IRunControlListener{
 
-    private dispatcher?: IDispatcher;
-    private channel: Channel;
-    private hasher = new NumericalHashCode();
+    private _hasher: NumericalHashCode;
 
-    public constructor() {
+    // Entities that are used to communicate over TCF to the AVR Target
+    private _dispatcher: IDispatcher;   // Client side
+    private _atbackend: ChildProcessWithoutNullStreams; // AVR target side
+
+    // TCF Services used to debug an AVR Target
+    private _locator: LocatorService;
+    private _processes: ProcessService;
+    private _tool: ToolService;
+    private _memory: MemoryService;
+    private _device: DeviceService;
+    private _stream: StreamService;
+    private _runControl: RunControlService;
+    private _registers: RegisterService;
+    private _stackTrace: StackTraceService;
+    private _expressions: ExpressionService;
+    private _breakpoints: BreakpointsService;
+
+
+    public constructor(atbackend: ChildProcessWithoutNullStreams, dispatcher:WebsocketDispatcher) {
         super();
+        this._dispatcher = dispatcher;
+        this._atbackend = atbackend;
+        this._hasher = new NumericalHashCode();
+        this._locator = new LocatorService(dispatcher);
+        this._processes = new ProcessService(dispatcher);
+        this._tool = new ToolService(dispatcher);
+        this._memory = new MemoryService(dispatcher);
+        this._device = new DeviceService(dispatcher);
+        this._stream = new StreamService(dispatcher);
+        this._runControl = new RunControlService(dispatcher);
+        this._registers = new RegisterService(dispatcher);
+        this._stackTrace = new StackTraceService(dispatcher);
+        this._expressions = new ExpressionService(dispatcher);
+        this._breakpoints = new BreakpointsService(dispatcher);
+
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
-        this.channel = new Channel();
     }
+
     contextAdded(contexts: IRunControlContext[]): void {
         // throw new Error('Method not implemented.');
     }
@@ -70,11 +103,11 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     }
     /* IRunControlListener */
     public contextSuspended(contextId: string, pc: number, reason: string, state: any): void {
-        this.sendEvent(new StoppedEvent(reason, this.hasher.hash(contextId), ''));
+        this.sendEvent(new StoppedEvent(reason, this._hasher.hash(contextId), ''));
     }
 
     public contextResumed(contextId: string): void {
-        this.sendEvent(new ContinuedEvent(this.hasher.hash(contextId)));
+        this.sendEvent(new ContinuedEvent(this._hasher.hash(contextId)));
     }
     // public contextAdded(contexts: IRunControlContext[]): void { }
     // public contextChanged(contexts: IRunControlContext[]): void { }
@@ -137,27 +170,23 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     }
 
     protected disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments): void {
-        super.disconnectRequest(response, args);
+        // super.disconnectRequest(response, args);
 
         /* Terminate the processes */
-        try {
-            let processService = this.channel.getService<ProcessService>('Processes');
-            processService.contexts.forEach(context => {
-                processService.terminate(context.ID);
-            });
-        } catch (e) {
-            console.error(e);
-        }
+        this._processes.contexts.forEach(context => {
+            this._processes.terminate(context.ID);
+        });
 
         /* Tear down the tools */
-        try {
-            let toolService = this.channel.getService<ToolService>('Tool');
-            toolService.contexts.forEach(context => {
-                toolService.tearDownTool(context.ID);
-            });
-        } catch (e) {
-            console.error(e);
+        this._tool.contexts.forEach(context => {
+            this._tool.tearDownTool(context.ID);
+        });
+
+        // Kill atbackend
+        if (this._atbackend.kill()) {
+            response.success = true;
         }
+        this.sendResponse(response);
     }
 
     protected cancelRequest(response: DebugProtocol.CancelResponse, args: DebugProtocol.CancelArguments) {
@@ -171,101 +200,69 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
      * @param args 
      */
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
-        let self = this;
-        // Create the websocket dispatcher to communicate with atbackend
-        this.dispatcher = new WebsocketDispatcher(args.atbackendHost, args.atbackendPort,
-            (message: string) => {
-                console.log(message);
-            },
-            (message: string) => {
-                console.log(message);
-            });
-        this.dispatcher.progressHandler(new ProgressReporter('Launcher',this));
-        // Connects to AtBackend
-        this.dispatcher.connect((dispatcher: IDispatcher) => {
-            // Initiate the TCF channel after that websocket connection is opened
-            let locator = new LocatorService(dispatcher);
-            let tool = new ToolService(dispatcher);
-            let device = new DeviceService(dispatcher);
-            let stream = new StreamService(dispatcher);
-            let runControl = new RunControlService(dispatcher);
-            let processes = new ProcessService(dispatcher);
-            let memory = new MemoryService(dispatcher);
-            let registers = new RegisterService(dispatcher);
-            let stackTrace = new StackTraceService(dispatcher);
-            let expressions = new ExpressionService(dispatcher);
-            let breakpoints = new BreakpointsService(dispatcher);
 
-            // Ordre AZ
-            self.channel.setLocalService(breakpoints);
-            self.channel.setLocalService(device);
-            self.channel.setLocalService(expressions);
-            self.channel.setLocalService(locator);
-            self.channel.setLocalService(memory);
-            self.channel.setLocalService(processes);
-            self.channel.setLocalService(registers);
-            self.channel.setLocalService(runControl);
-            self.channel.setLocalService(stackTrace);
-            self.channel.setLocalService(stream);
-            self.channel.setLocalService(tool);
+        this._dispatcher.progressHandler(new ProgressReporter('Launcher',this));
 
 
-            locator.hello(self.channel.getLocalServices(), async (remoteServices: string[]) => {
-                // Callback used when we receive the Hello event from atbackend
-                self.channel.setRemoteServices(remoteServices);
-                // runControlService.addListener(this);
-                let attachedTools = await tool.getAttachedTools();
-                processes.addListener(new GotoMain(self));
-                /* Once a device has been instantiated, we need to actually launch with a module */
-                device.addListener(new ProcessLauncher(args.program, processes, args));
-                runControl.addListener(self);
-                try {
-                    self.channel.setAttachedTools(attachedTools);
-                    let attachedTool = self.channel.getAttachedTool(args.tool);
-                    let toolContext: IToolContext = await tool.setupTool(attachedTool);
-                    await tool.connect(toolContext.ID);
-                    await tool.checkFirmware(toolContext.ID);
-                    let properties: IToolProperties = {
-                        InterfaceName: args.interface,
-                        PackPath: args.packPath,
-                        DeviceName: args.device,
-                        InterfaceProperties: args.interfaceProperties
-                    };
-                    await tool.setProperties(toolContext.ID, properties);
-                    
-                    
-                } catch (error) {
-                    window.showErrorMessage(error.message);
-                    this.sendEvent(new TerminatedEvent());
-                }
+        // Starts TCF Channel
+        this._locator.hello(['Locator']);
 
-            });
-            if (!args.noDebug) {
-                stream.setLogBits(0xFFFFFFFF);
-            }
+        this._processes.addListener(new GotoMain(this));
+        /* Once a device has been instantiated, we need to actually launch with a module */
+        this._device.addListener(new ProcessLauncher(args.program, this._processes, args));
+        this._runControl.addListener(this);
 
+        // Connects with a debug tool (atmelice, nedbg, ...)
+        const attachedTools: ITool[] = await (await this._tool.getAttachedTools()).filter((tool: ITool) => {
+            return tool.ToolType === args.tool;
         });
+        let toolContext: IToolContext;
+        // TODO: Maybe to do in tool service
+        if (attachedTools.length === 1) {
+            toolContext = await this._tool.setupTool(attachedTools.pop()!);
+        } else if (attachedTools.length === 0){
+            window.showErrorMessage(`No tool of type: ${args.tool}`);
+            this.sendEvent(new TerminatedEvent());
+            return;
+        } else {
+            window.showErrorMessage(`${attachedTools.length} tools of type ${args.tool}`);
+            this.sendEvent(new TerminatedEvent());
+            return;
+        }
+
+        await this._tool.connect(toolContext.ID);
+        await this._tool.checkFirmware(toolContext.ID);
+        let properties: IToolProperties = {
+            InterfaceName: args.interface,
+            PackPath: args.packPath,
+            DeviceName: args.device,
+            InterfaceProperties: args.interfaceProperties
+        };
+        await this._tool.setProperties(toolContext.ID, properties);
+
+        if(!args.noDebug) {
+            this._stream.setLogBits(0xFFFFFFFF);
+        }
             
         /* Once a device has been instantiated, we need to actually launch with a module */
-        // deviceService.addListener(new ProcessLauncher(args.program, processService, args));
+        this._device.addListener(new ProcessLauncher(args.program, this._processes, args));
         this.sendResponse(response);
         
     }
     private activeBreakpointIds = new Array<string>();
     /* TODO: this is called once PER SOURCE FILE. Need to extend acitveBreakpoints etc */
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
-        let processService = <ProcessService>this.channel.getService('Processes');
-        let breakpointsService = <BreakpointsService>this.channel.getService('Breakpoints');
 
+        let self = this;
         response.body = {
             breakpoints: []
         };
-        processService.contexts.forEach((context) => {
-            breakpointsService.remove(this.activeBreakpointIds);
+        this._processes.contexts.forEach((context) => {
+            self._breakpoints.remove(this.activeBreakpointIds);
             this.activeBreakpointIds = [];
             let breakpointsToProcess: number = args.breakpoints!.length;
             args.breakpoints?.forEach((breakpointArgs) => {
-                let breakpointId = breakpointsService.getNextBreakpointId();
+                let breakpointId = self._breakpoints.getNextBreakpointId();
                 
                 let breakpoint: { [k: string]: any } = {
                     'ContextIds': [context.ID],
@@ -282,8 +279,8 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                     breakpoint['Condition'] = breakpointArgs.condition;
                     breakpoint['Istrue'] = true;
                 }
-                breakpointsService.add(breakpoint).then((report) => {
-                    breakpointsService.getProperties(breakpointId).then((breakpoint) => {
+                self._breakpoints.add(breakpoint).then(_ => {
+                    self._breakpoints.getProperties(breakpointId).then((breakpoint) => {
                         let bp = new Breakpoint(breakpoint.Enabled, breakpoint.Line, breakpoint.Column);
 
                         response.body.breakpoints.push(bp);
@@ -302,16 +299,13 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     }
 
     protected threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request): void {
-        let processService = <ProcessService>this.channel.getService('Processes');
-
-        // runtime supports no threads so just return a default thread.
         response.body = {
             threads: []
         };
 
-        processService.contexts.forEach(context => {
+        this._processes.contexts.forEach(context => {
             response.body.threads.push(
-                new Thread(this.hasher.hash(context.RunControlId), context.Name));
+                new Thread(this._hasher.hash(context.RunControlId), context.Name));
         });
 
         this.sendResponse(response);
@@ -319,16 +313,15 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
     /* Stack frames are organized as children of a process (violates our thread assumptions) */
     protected async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request) {
-        let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
-        let processService = <ProcessService>this.channel.getService('Processes');
-        // let runcontrolContextID = <string>this.hasher.retrieve(args.threadId);
+        let self = this;
+
         response.body = {
             stackFrames: [],
             totalFrames: 0
         };
         let frames: IStackTraceContext[];
-        processService.contexts.forEach(async (context, key) => {
-            frames = await stackTraceService.getChildren(context.ID);
+        this._processes.contexts.forEach(async (context, key) => {
+            frames = await self._stackTrace.getChildren(context.ID);
             frames.forEach((frame) => {
                 let frameArgs: string[] = [];
 
@@ -362,7 +355,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
                 /* Push the frame */
                 response.body.stackFrames.push(
-                    new StackFrame(this.hasher.hash(frame.ID), frameName, source, frame.Line));
+                    new StackFrame(this._hasher.hash(frame.ID), frameName, source, frame.Line));
             });
             this.sendResponse(response);
         });
@@ -370,25 +363,23 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
     /* Scopes describes a collection of variables */
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
-        let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
-        let processService = <ProcessService>this.channel.getService('Processes');
-
+        let self = this;
         response.body = {
             scopes: []
         };
         let frames: IStackTraceContext[];
-        processService.contexts.forEach(async (context,parentId) => {
+        this._processes.contexts.forEach(async (context,parentId) => {
 
-            frames = await stackTraceService.getChildren(parentId);
+            frames = await self._stackTrace.getChildren(parentId);
             if (frames.length > 0) {
-                response.body.scopes.push(new Scope('Local', this.hasher.hash(frames.shift()!.ID)));
+                response.body.scopes.push(new Scope('Local', this._hasher.hash(frames.shift()!.ID)));
                 frames.forEach((frame) => {
-                    response.body.scopes.push(new Scope(frame.Func, this.hasher.hash(frame.ID), false));
+                    response.body.scopes.push(new Scope(frame.Func, this._hasher.hash(frame.ID), false));
                 });
             }
             
             /* Push the registers scope */
-            response.body.scopes.push(new Scope('Registers', this.hasher.hash('Registers'), false));
+            response.body.scopes.push(new Scope('Registers', this._hasher.hash('Registers'), false));
 
             this.sendResponse(response);
         });
@@ -396,10 +387,9 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
     /* Evaluate using the expression evaluator */
     protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
-        let expressionsService = <ExpressionService>this.channel.getService('Expressions');
-        let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
+        let self = this;
 
-        let stackTraceContextId = this.hasher.retrieve(args.frameId!);
+        let stackTraceContextId = this._hasher.retrieve(args.frameId!);
 
         response.body = {
             result: '',
@@ -414,12 +404,12 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             case 'hover':
             case 'repl':
             default:
-                stackTraceService.getContext(<string>stackTraceContextId).then(context => {
-                    expressionsService.compute(context, 'C', args.expression).then((expression) => {
+                self._stackTrace.getContext(<string>stackTraceContextId).then(context => {
+                    self._expressions.compute(context, 'C', args.expression).then((expression) => {
                         response.body.result = expression.Val.trim();
                         response.body.type = expression.Type;
 
-                        expressionsService.dispose(expression.ID);
+                        self._expressions.dispose(expression.ID);
 
                         this.sendResponse(response);
                     }).catch((error: Error) => {
@@ -435,16 +425,15 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
     /* Variables belong to a scope (which is created above) */
     protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments) {
-
+        let self = this;
         response.body = {
             variables: []
         };
 
-        if (args.variablesReference === this.hasher.hash('Registers')) {
-            let registerService = <RegisterService>this.channel.getService('Registers');
+        if (args.variablesReference === this._hasher.hash('Registers')) {
             let value: string;
-            for (let [id, context] of registerService.contexts) {
-                value = await registerService.get(id);
+            for (let [id, context] of this._registers.contexts) {
+                value = await this._registers.get(id);
                 let buffer = Buffer.from(JSON.parse(value), 'base64');
                 let valueString = `0x${buffer.readUIntBE(0, context.Size).toString(16)}`;
                 if (context.Name === 'CYCLE_COUNTER') {
@@ -458,22 +447,18 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
             this.sendResponse(response);
         }
         else{
-            let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
-            let processService = <ProcessService>this.channel.getService('Processes');
-            let expressionService = <ExpressionService>this.channel.getService('Expressions');
-
             let frames: IStackTraceContext[];
-            processService.contexts.forEach(async (context, parentId) => {
+            self._processes.contexts.forEach(async (context, parentId) => {
 
-                frames = await stackTraceService.getChildren(parentId);
-                let scopeId: string = <string>this.hasher.retrieve(args.variablesReference);
+                frames = await self._stackTrace.getChildren(parentId);
+                let scopeId: string = <string>this._hasher.retrieve(args.variablesReference);
                 let frame = frames.find((frame) => {
                     return scopeId === frame.ID;
                 });
 
                 if (frame) {
                     /* Get expressions for the frame */
-                    let children = await expressionService.getChildren(frame.ID);
+                    let children = await self._expressions.getChildren(frame.ID);
                     let childrenToEvaluate = children.length;
 
                     if (childrenToEvaluate === 0) {
@@ -481,14 +466,14 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                     }
 
                     children.forEach(expression => {
-                        expressionService.getContext(expression.ID).then(async (expression) => {
+                        self._expressions.getContext(expression.ID).then(async (expression) => {
                             let variable: any = new Variable(expression.Expression, expression.Val.trim());
                             variable.type = expression.Type;
 
                             if (expression.Numchildren !== 0) {
-                                variable.variablesReference = this.hasher.hash(expression.ID);
+                                variable.variablesReference = this._hasher.hash(expression.ID);
                             } else {
-                                expressionService.dispose(expression.ID);
+                                self._expressions.dispose(expression.ID);
                             }
                             /* Build the variable from the expression*/
                             response.body.variables.push(variable);
@@ -500,8 +485,8 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                         }).catch((error: Error) => console.log(error.message));
                     });
                 } else {
-                    let struct = await expressionService.getContext(scopeId);
-                    let fields = await expressionService.getChildrenRange(scopeId, struct.Numchildren);
+                    let struct = await self._expressions.getContext(scopeId);
+                    let fields = await self._expressions.getChildrenRange(scopeId, struct.Numchildren);
                     fields.forEach((field) => {
                         response.body.variables.push(
                             new Variable(field.Expression, field.Val)
@@ -515,21 +500,17 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     
     /* Resume is any form of resume */
     private resume(mode: ResumeMode, threadID?: number): void {
-        let runControlService = <RunControlService>this.channel.getService('RunControl');
-
-        runControlService.contexts.forEach((context,id) => {
-            if (!threadID || threadID === this.hasher.hash(context.ID)) {
-                runControlService.resume(id, mode).catch((error: Error) => console.log(error.message));
+         this._runControl.contexts.forEach((context,id) => {
+            if (!threadID || threadID === this._hasher.hash(context.ID)) {
+                this._runControl.resume(id, mode).catch((error: Error) => console.log(error.message));
             }
         });
     }
 
     private suspend(threadID?: number): void {
-        let runControlService = <RunControlService>this.channel.getService('RunControl');
-
-        runControlService.contexts.forEach((context,id) => {
-            if (threadID === this.hasher.hash(context.ID) || threadID === 0) {
-                runControlService.suspend(id).catch((error: Error) => console.log(error.message));
+        this._runControl.contexts.forEach((context,id) => {
+            if (threadID === this._hasher.hash(context.ID) || threadID === 0) {
+                this._runControl.suspend(id).catch((error: Error) => console.log(error.message));
             }
         });
     }
@@ -560,27 +541,22 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     }
     /* TODO, use goto from vscode-debugadapter */
     public goto(func: string): void {
-        let expressionsService = <ExpressionService>this.channel.getService('Expressions');
-        let runControlService = <RunControlService>this.channel.getService('RunControl');
-        let stackTraceService = <StackTraceService>this.channel.getService('StackTrace');
-        let processService = <ProcessService>this.channel.getService('Processes');
-
         let runControlContext: IRunControlContext | undefined;
-        processService.contexts.forEach((processContext) => {
-            runControlContext = runControlService.contexts.get(processContext.RunControlId);
-            stackTraceService.getChildren(processContext.ID).then(async (children) => {
+        this._processes.contexts.forEach((processContext) => {
+            runControlContext = this._runControl.contexts.get(processContext.RunControlId);
+            this._stackTrace.getChildren(processContext.ID).then(async (children) => {
             /* Find address of function identifier */
                 let child = children.shift();
                 if (child) {
-                    let expressionContext = await expressionsService.compute(child, 'C', `${func}`);
+                    let expressionContext = await this._expressions.compute(child, 'C', `${func}`);
 
                     /* Convert address to number */
                     let address = parseInt(expressionContext.Val.replace('0x', ''), 16);
-                    expressionsService.dispose(expressionContext.ID);
+                    this._expressions.dispose(expressionContext.ID);
 
                     /* Goto address */
                     if (runControlContext) {
-                        runControlService.resume(runControlContext.ID, ResumeMode.Goto, address);
+                        this._runControl.resume(runControlContext.ID, ResumeMode.Goto, address);
                     }
                 } 
             }).catch((error: Error) => console.log(error.message));

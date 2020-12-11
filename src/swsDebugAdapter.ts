@@ -3,7 +3,7 @@ import {
 } from 'vscode-debugadapter';
 import { SwsDebugSession } from './swsDebug';
 
-DebugSession.run(SwsDebugSession);
+// DebugSession.run(SwsDebugSession);
 // const session = new SwsDebugSession();
 // process.on('SIGTERM', () => {
 //     session.shutdown();

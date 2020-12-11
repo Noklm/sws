@@ -1,13 +1,26 @@
 'use strict';
 
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import * as vscode from 'vscode';
 import { WorkspaceFolder, DebugConfiguration, ProviderResult, CancellationToken } from 'vscode';
 import { SwsDebugSession } from './swsDebug';
+import { WebsocketDispatcher } from './websocketDispatcher';
 
 class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
 
-    createDebugAdapterDescriptor(_session: vscode.DebugSession): ProviderResult<vscode.DebugAdapterDescriptor> {
-        return new vscode.DebugAdapterInlineImplementation(new SwsDebugSession());
+    async createDebugAdapterDescriptor(_session: vscode.DebugSession): Promise<ProviderResult<vscode.DebugAdapterDescriptor>> {
+        // TODO: add possibility to user to change the atbackend port
+        const atbackend: ChildProcessWithoutNullStreams = spawn('C:\\Program Files (x86)\\Atmel\\Studio\\7.0\\atbackend\\atbackend.exe', ['/websocket-port=4710']);
+        // TODO: supprimer de delay de 1s et trouver un moyen de demarrer une debug sessions quand atbackend et le dispatcher sont lies
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const dispatcher = new WebsocketDispatcher('127.0.0.1', 4710,
+        (message: string) => {
+            console.log(message);
+        },
+        (message: string) => {
+            console.log(message);
+        });
+        return new vscode.DebugAdapterInlineImplementation(new SwsDebugSession(atbackend, dispatcher));
     }
 }
 
@@ -24,7 +37,7 @@ class SwsConfigurationProvider implements vscode.DebugConfigurationProvider {
                 return undefined;	// abort launch
             });
         }
-
+        config.tool = `com.atmel.avrdbg.tool.${config.tool}`;
         return config;
     }
 }
