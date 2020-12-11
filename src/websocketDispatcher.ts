@@ -55,9 +55,6 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 		if (this.logger) {
 			this.logger(`${data}\n\r`);
 		}
-		else {
-			console.error(`${data}\n\r`);
-		}
 	}
 
 	/**
