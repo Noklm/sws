@@ -15,7 +15,6 @@ import {
 } from 'vscode-debugadapter';
 import { WebsocketDispatcher } from './websocketDispatcher';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { IService } from './services/iservice';
 import { IDispatcher } from './idispatcher';
 import { LaunchRequestArguments } from './launchRequestArguments';
 import { IRunControlListener } from './services/runcontrol/irunControlListener';
@@ -42,7 +41,6 @@ import {
 } from './services/services';
 import { AccessMode } from './services/breakpoint/accessMode';
 import { NumericalHashCode } from './numericalHashCode';
-import { Channel } from './channel/channel';
 import { ProcessLauncher } from './processLauncher';
 import { ProgressReporter } from './progressReporter';
 import { ChildProcessWithoutNullStreams } from 'child_process';
