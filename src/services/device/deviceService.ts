@@ -2,9 +2,8 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IDeviceContext } from './ideviceContext';
-import { IDeviceListener } from './ideviceListener';
 
-export class DeviceService extends AbstractService<IDeviceContext, IDeviceListener> {
+export class DeviceService extends AbstractService<IDeviceContext> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Device', dispatcher);

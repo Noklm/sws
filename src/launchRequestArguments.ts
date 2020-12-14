@@ -9,8 +9,8 @@ import { InterfaceType, InterfaceNameType } from './services/tool/iprogInterface
 export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 
 	// ATBACKEND PROPERTIES
-	atbackendHost: string;
-	atbackendPort: number;
+	// atbackendHost: string;
+	// atbackendPort: number;
 
 	// FILE TO DEBUG PROPERTY
 	program: string;

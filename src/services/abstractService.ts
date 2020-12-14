@@ -6,27 +6,23 @@ import { IContext, IContextListener } from './icontext';
 import { IDispatcher } from './../idispatcher';
 import { EventEmitter } from 'events';
 
-abstract class AbstractService<TContext extends IContext, TListener extends IContextListener<TContext>> implements IService {
+abstract class AbstractService<TContext extends IContext>extends EventEmitter implements IService {
 	protected _name: string;
-	protected _commandEmitter: EventEmitter; // One service handle commands on events
 	protected dispatcher: IDispatcher;
-
 	public contexts: Map<string, TContext>;	// One service can have one or more contexts
-	protected listeners: Array<TListener>; // One service can have on or more listeners
 
 
 	public constructor(name: string, dispatcher: IDispatcher) {
+		super();
 		this._name = name;
-		this._commandEmitter = new EventEmitter();
 		this.dispatcher = dispatcher;
 		this.dispatcher.on(this._name, this.eventHandler);
 		this.contexts = new Map<string, TContext>();
-		this.listeners = new Array<TListener>();
 
 		// Register event that are handled by all services that extends abstract service
-		this._commandEmitter.on('contextAdded', this.handleContextAdded);
-		this._commandEmitter.on('contextChanged', this.handleContextChanged);
-		this._commandEmitter.on('contextRemoved', this.handleContextRemoved);
+		this.on('contextAdded', this.handleContextAdded);
+		this.on('contextChanged', this.handleContextChanged);
+		this.on('contextRemoved', this.handleContextRemoved);
 	}
 
 	/**
@@ -36,21 +32,12 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		return this._name;
 	}
 
-	// /**
-	//  * All services implement commands, overload this method if more commands are available for the service
-	//  */
-	// public registerCommands() {
-	// 	this._commandEmitter.on('contextAdded', this.handleContextAdded);
-	// 	this._commandEmitter.on('contextChanged', this.handleContextChanged);
-	// 	this._commandEmitter.on('contextRemoved', this.handleContextRemoved);
-	// }
-
 	protected log(message: string): void {
 		this.dispatcher.log(`[${this._name}] ${message}`);
 	}
 
 	public eventHandler = (event: IEvent): void => {
-		if (this._commandEmitter.emit(event.command, event.args)) {
+		if (this.emit(event.command, event.args)) {
 			this.log(`Command ${event.command} done`);
 		} else {
 			this.log(`Command ${event.command} unknown`);
@@ -62,24 +49,11 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 //----------------------------------------------------------------------
 	// Context
 //----------------------------------------------------------------------
-	
-	public addListener(listener: TListener): void {
-		this.listeners.push(listener);
-	}
-
-	public removeListener(listener: TListener): void {
-		this.listeners = this.listeners.filter((value) => {
-			return value !== listener;
-		});
-	}
-
 	public getContext(id: string): Promise<TContext> {
 		return Promise.resolve(this.contexts.get(id) as TContext);
 	}
 
 	private handleContextAdded = (eventData: string[]): void => {
-		let self = this;
-
 		let contextsData = <TContext[]>JSON.parse(eventData[0]);
 		let newContexts = new Array<TContext>();
 
@@ -88,17 +62,9 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 			newContexts.push(contextData);
 			this.log(`ContextAdded: ${contextData.ID}`);
 		});
-
-		
-
-		this.listeners.forEach(listener => {
-			listener.contextAdded(newContexts);
-		});
 	};
 
 	private handleContextChanged = (eventData: string[]): void => {
-		let self = this;
-
 		let contextsData = <TContext[]>JSON.parse(eventData[0]);
 		let newContexts = new Array<TContext>();
 
@@ -106,12 +72,6 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 			this.contexts.set(contextData.ID, contextData);
 			newContexts.push(contextData);
 			this.log(`ContextChanged: ${contextData.ID}`);
-		});
-
-		
-
-		this.listeners.forEach(listener => {
-			listener.contextChanged(newContexts);
 		});
 	};
 
@@ -125,10 +85,6 @@ abstract class AbstractService<TContext extends IContext, TListener extends ICon
 		});
 
 		this.log(`ContextRemoved: ${ids}`);
-
-		this.listeners.forEach(listener => {
-			listener.contextRemoved(ids);
-		});
 	};
 }
 

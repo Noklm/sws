@@ -4,11 +4,11 @@ import { IContextListener } from './../icontext';
 import { IRunControlContext } from './irunControlContext';
 
 export interface IRunControlListener extends IContextListener<IRunControlContext> {
-	contextSuspended(contextId: string, pc: number, reason: string, state: any): void;
-	contextResumed(contextId: string): void;
-	contextException(contextId: string, description: string): void;
-	containerSuspended(contextId: string, pc: number, reason: string, state: any, contextIds: string[]): void;
-	containerResumed(contextIds: string[]): void;
+	contextSuspended(eventData: string[]): void;
+	contextResumed(eventData: string[]): void;
+	contextException(eventData: string[]): void;
+	containerSuspended(eventData: string[]): void;
+	containerResumed(eventData: string[]): void;
 
-	contextStateChanged(contextIds: string[]): void;
+	contextStateChanged(eventData: string[]): void;
 }

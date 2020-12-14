@@ -1,15 +1,18 @@
 'use strict';
 
+
+import { EventEmitter } from 'events';
 import { IDispatcher } from './../abstractService';
 import { IEventHandler, IService, IEvent } from './../iservice';
 
 // NOTE: Not really implemented to spec
-export class StreamService implements IEventHandler, IService {
+export class StreamService extends EventEmitter implements IEventHandler, IService {
 
 	private dispatcher: IDispatcher;
 	private name: string;
 
 	public constructor(dispatcher: IDispatcher) {
+		super();
 		this.name = 'Stream';
 		this.dispatcher = dispatcher;
 		this.dispatcher.on(this.name, this.eventHandler);

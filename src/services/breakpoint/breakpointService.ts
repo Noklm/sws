@@ -4,11 +4,9 @@
  // http://git.eclipse.org/c/tcf/org.eclipse.tcf.git/plain/docs/TCF%20Service%20-%20Breakpoints.html
 
 import { IDispatcher, AbstractService } from './../abstractService';
-
 import { IBreakpointContext } from './ibreakpointContext';
-import { IBreakpointListener } from './ibreakpointListener';
 
-export class BreakpointsService extends AbstractService<IBreakpointContext, IBreakpointListener> {
+export class BreakpointsService extends AbstractService<IBreakpointContext> {
 
 	private contextCounter: number;
 

@@ -2,7 +2,6 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IToolContext } from './itoolContext';
-import { IToolListener } from './itoolListener';
 import {
 	IConnectionProperties,
 	ITool
@@ -11,13 +10,13 @@ import {
 /**
  * Class that describe the TCF Tool Service
  */
-export class ToolService extends AbstractService<IToolContext, IToolListener>{
+export class ToolService extends AbstractService<IToolContext>{
 	public attachedTools: Array<ITool>;
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Tool', dispatcher);
 		this.attachedTools = new Array<ITool>();
-		this._commandEmitter.on('attachedToolsChanged', this.handleAttachedToolsChanged);
+		this.on('attachedToolsChanged', this.handleAttachedToolsChanged);
 	}
 
 	/**
@@ -83,10 +82,6 @@ export class ToolService extends AbstractService<IToolContext, IToolListener>{
 	private handleAttachedToolsChanged = (eventData: string[]): void => {
 		this.attachedTools = <ITool[]>JSON.parse(eventData[0]);
 		this.log(`AttachedToolsChanged: ${eventData}`);
-
-		this.listeners.forEach(listener => {
-			listener.attachedToolsChanged(this.attachedTools);
-		});
 	};
 
 

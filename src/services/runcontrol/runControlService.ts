@@ -4,16 +4,15 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IRunControlContext } from './irunControlContext';
-import { IRunControlListener } from './irunControlListener';
 import { ResumeMode } from './resumeMode';
 
 
-export class RunControlService extends AbstractService<IRunControlContext, IRunControlListener> {
+export class RunControlService extends AbstractService<IRunControlContext> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('RunControl', dispatcher);
-		this._commandEmitter.on('contextSuspended', this.handleContextSuspended);
-		this._commandEmitter.on('contextResumed', this.handleContextResumed);
+		this.on('contextSuspended', this.handleContextSuspended);
+		this.on('contextResumed', this.handleContextResumed);
 	}
 
 	public resume(contextId: string, mode: ResumeMode, count?: number): Promise<string> {
@@ -42,20 +41,12 @@ export class RunControlService extends AbstractService<IRunControlContext, IRunC
 		let state = JSON.parse(eventData[3]);
 
 		this.log(`ContextSuspended: ${id} => ${pc} (${reason})`);
-
-		this.listeners.forEach(listener => {
-			listener.contextSuspended(id, pc, reason, state);
-		});
 	};
 
 	private handleContextResumed = (eventData: string[]): void => {
 		let id = JSON.parse(eventData[0]);
 
 		this.log(`ContextResumed: ${id}`);
-
-		this.listeners.forEach(listener => {
-			listener.contextResumed(id);
-		});
 	};
 
 	public setProperties(contextId: string, properties: any): Promise<string> {

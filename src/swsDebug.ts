@@ -17,12 +17,11 @@ import { WebsocketDispatcher } from './websocketDispatcher';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDispatcher } from './idispatcher';
 import { LaunchRequestArguments } from './launchRequestArguments';
-import { IRunControlListener } from './services/runcontrol/irunControlListener';
-import { GotoMain } from './gotoMain';
 import {
     IToolContext, IToolProperties,
     IRunControlContext,
     IStackTraceContext,
+    IDeviceContext,
 } from './services/contexts';
 import { ResumeMode } from './services/runcontrol/resumeMode';
 import {
@@ -41,7 +40,6 @@ import {
 } from './services/services';
 import { AccessMode } from './services/breakpoint/accessMode';
 import { NumericalHashCode } from './numericalHashCode';
-import { ProcessLauncher } from './processLauncher';
 import { ProgressReporter } from './progressReporter';
 import { ChildProcessWithoutNullStreams } from 'child_process';
 import { ITool } from './services/tool/itool';
@@ -50,7 +48,7 @@ import { ITool } from './services/tool/itool';
  * Creates a new debug adapter that is used for one debug session.
  * We configure the default implementation of a debug adapter here.
  */
-export class SwsDebugSession extends DebugSession implements IRunControlListener{
+export class SwsDebugSession extends DebugSession{
 
     private _hasher: NumericalHashCode;
 
@@ -62,7 +60,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
     private _locator: LocatorService;
     private _processes: ProcessService;
     private _tool: ToolService;
-    private _memory: MemoryService;
+    // private _memory: MemoryService;
     private _device: DeviceService;
     private _stream: StreamService;
     private _runControl: RunControlService;
@@ -80,7 +78,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         this._locator = new LocatorService(dispatcher);
         this._processes = new ProcessService(dispatcher);
         this._tool = new ToolService(dispatcher);
-        this._memory = new MemoryService(dispatcher);
+        // this._memory = new MemoryService(dispatcher);
         this._device = new DeviceService(dispatcher);
         this._stream = new StreamService(dispatcher);
         this._runControl = new RunControlService(dispatcher);
@@ -89,31 +87,23 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         this._expressions = new ExpressionService(dispatcher);
         this._breakpoints = new BreakpointsService(dispatcher);
 
+        this._runControl.on('contextSuspended', (eventData: string[]) => {
+            const id = JSON.parse(eventData[0]);
+            // const pc = +JSON.parse(eventData[1]);
+            const reason = JSON.parse(eventData[2]);
+            // const state = JSON.parse(eventData[3]);
+            this.sendEvent(new StoppedEvent(reason, this._hasher.hash(id), ''));
+
+        });
+
+        this._runControl.on('contextResumed', (eventData: string[]) => {
+            const id = JSON.parse(eventData[0]);
+            this.sendEvent(new ContinuedEvent(this._hasher.hash(id)));
+        });
+
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
     }
-
-    contextAdded(contexts: IRunControlContext[]): void {
-        // throw new Error('Method not implemented.');
-    }
-    contextChanged(contexts: IRunControlContext[]): void {
-        // throw new Error('Method not implemented.');
-    }
-    /* IRunControlListener */
-    public contextSuspended(contextId: string, pc: number, reason: string, state: any): void {
-        this.sendEvent(new StoppedEvent(reason, this._hasher.hash(contextId), ''));
-    }
-
-    public contextResumed(contextId: string): void {
-        this.sendEvent(new ContinuedEvent(this._hasher.hash(contextId)));
-    }
-    // public contextAdded(contexts: IRunControlContext[]): void { }
-    // public contextChanged(contexts: IRunControlContext[]): void { }
-    public contextRemoved(contextIds: string[]): void { }
-    public contextException(contextId: string, description: string): void { }
-    public containerSuspended(contextId: string, pc: number, reason: string, state: any, contextIds: string[]): void { }
-    public containerResumed(contextIds: string[]): void { }
-    public contextStateChanged(contextIds: string[]): void { }
 
     /**
      * The 'initialize' request is the first request called by the frontend
@@ -198,15 +188,41 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
      * @param args 
      */
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
-
+        const self = this;
         this._dispatcher.progressHandler(new ProgressReporter('Launcher', this));
-        
+
         // If TCF channel not opened after 1s timeout stop launching
         if (this._locator.isChannelOpened) {
-            this._processes.addListener(new GotoMain(this));
-            /* Once a device has been instantiated, we need to actually launch with a module */
-            this._device.addListener(new ProcessLauncher(args.program, this._processes, args));
-            this._runControl.addListener(this);
+
+            /* Once a device has been instantiated, we need to actually launch with a module */   
+            const launchParameters = {
+                'LaunchSuspended': args.launchSuspended,
+                'LaunchAttached': args.launchAttached,
+                'CacheFlash': args.cacheFlash,
+                'EraseRule': args.eraseRule,
+                'PreserveEeprom': args.preserveEeprom,
+                'RamSnippetAddress': args.ramSnippetAddress,
+                'ProgFlashFromRam': args.progFlashFromRam,
+                'UseGdb': args.useGdb,
+                'GdbLocation': args.gdbLocation,
+                'BootSegment': args.bootSegment,
+                'PackPath': args.packPath
+            };
+
+            this._device.once('contextAdded', (eventData: string[]) => {
+                const contexts = <IDeviceContext[]>JSON.parse(eventData[0]);
+                self._processes.launch(args.program, contexts[0], launchParameters)
+                    .catch((error) => { 
+                        window.showErrorMessage(error.message);
+                        self.sendEvent(new TerminatedEvent());
+                    });
+            });
+
+            /* Once a process has been launched, we need to actually run it until the main starts */
+            this._processes.once('contextAdded', _ => {
+                self.sendResponse(response);
+                self.goto('main');
+            });
 
             // Connects with a debug tool (atmelice, nedbg, ...)
             const attachedTools: ITool[] = await (await this._tool.getAttachedTools()).filter((tool: ITool) => {
@@ -226,6 +242,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
                 return;
             }
 
+            // #TODO: tester sans les await qui semblent non obligatoires
             await this._tool.connect(toolContext.ID);
             await this._tool.checkFirmware(toolContext.ID);
             let properties: IToolProperties = {
@@ -238,11 +255,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
 
             if (!args.noDebug) {
                 this._stream.setLogBits(0xFFFFFFFF);
-            }
-
-            /* Once a device has been instantiated, we need to actually launch with a module */
-            this._device.addListener(new ProcessLauncher(args.program, this._processes, args));
-            this.sendResponse(response);
+            }   
             return;
         }
         window.showErrorMessage(`TCF channel not opened`);
@@ -539,6 +552,7 @@ export class SwsDebugSession extends DebugSession implements IRunControlListener
         this.sendResponse(response);
         this.suspend(args.threadId);
     }
+
     /* TODO, use goto from vscode-debugadapter */
     public goto(func: string): void {
         let runControlContext: IRunControlContext | undefined;

@@ -1,6 +1,8 @@
 'use strict';
 
-export interface IService extends IEventHandler {
+import { EventEmitter } from "events";
+
+export interface IService extends IEventHandler, EventEmitter {
 	getName(): string;
 }
 

@@ -5,10 +5,8 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IStackTraceContext } from './istackTraceContext';
-import { IStackTraceListener } from './istackTraceListener';
-import { IFrameArg } from './iframeArg';
 
-export class StackTraceService extends AbstractService<IStackTraceContext, IStackTraceListener> {
+export class StackTraceService extends AbstractService<IStackTraceContext> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('StackTrace', dispatcher);
@@ -24,7 +22,7 @@ export class StackTraceService extends AbstractService<IStackTraceContext, IStac
 		let self = this;
 		return new Promise<IStackTraceContext>( (resolve, reject) => {
 			self.getContexts([contextId])
-				.then( contexts => resolve(contexts.shift()))
+				.then( contexts => resolve(contexts.shift()!))
 				.catch(reject);
 		});
 	}

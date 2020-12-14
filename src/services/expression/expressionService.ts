@@ -3,11 +3,10 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IExpressionContext } from './iexpressionContext';
-import { IExpressionListener } from './iexpressionListener';
 import { IStackTraceContext } from './../stacktrace/istackTraceContext';
 
 
-export class ExpressionService extends AbstractService<IExpressionContext, IExpressionListener> {
+export class ExpressionService extends AbstractService<IExpressionContext> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Expressions', dispatcher);

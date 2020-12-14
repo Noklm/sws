@@ -4,13 +4,12 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IRegisterContext }  from './iregisterContext';
-import { IRegisterListener } from './iregisterListener';
 
-export class RegisterService extends AbstractService<IRegisterContext, IRegisterListener> {
+export class RegisterService extends AbstractService<IRegisterContext> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Registers', dispatcher);
-		this._commandEmitter.on('registerChanged', this.handleRegisterChanged);
+		this.on('registerChanged', this.handleRegisterChanged);
 	}
 
 	public get(contextId: string): Promise<string> {
@@ -25,7 +24,6 @@ export class RegisterService extends AbstractService<IRegisterContext, IRegister
 
 	private handleRegisterChanged = (eventData: string[]): void => {
 		let contextId = JSON.parse(eventData[0]);
-
 		this.log(`RegisterChanged: ${contextId}`);
 	};
 
