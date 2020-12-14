@@ -61,16 +61,17 @@
 					"type": "string",
 					"scope": "machine-overridable",
 					"enum": [
+						"ATmega_DFP",
 						"AVR-Dx_DFP",
 						"ATtiny_DFP"
 					],
-					"default": "AVR-Dx_DFP",
+					"default": "ATmega_DFP",
 					"description": "The pack to use"
 				},
 				"sws.config.PACK_VERSION": {
 					"type": "string",
 					"scope": "machine-overridable",
-					"default": "1.2.56",
+					"default": "1.6.364",
 					"description": "The version of the pack to use"
 				},
 				"sws.config.INTERFACE": {
