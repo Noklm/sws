@@ -4,7 +4,6 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IProcessContext } from './iprocessContext';
-import { IProcessListener } from './iprocessListener';
 import { IDeviceContext } from './../device/ideviceContext';
 
 /**
@@ -14,11 +13,11 @@ import { IDeviceContext } from './../device/ideviceContext';
  * allows to start and terminate a process, and allows to attach and detach a process for debugging. 
  * Debug services, like Memory and Run Control, require a process to be attached before they can access it.
  */
-export class ProcessService extends AbstractService<IProcessContext, IProcessListener> {
+export class ProcessService extends AbstractService<IProcessContext> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Processes', dispatcher);
-		this._commandEmitter.on('exited', this.handleExited);
+		this.on('exited', this.handleExited);
 	}
 
 	/**

@@ -2,16 +2,15 @@
 
 import { IDispatcher, AbstractService } from './../abstractService';
 import { IMemoryContext } from './imemoryContext';
-import { IMemoryListener } from './imemoryListener';
 
 import { SetMode } from './setMode';
 
 
-export class MemoryService extends AbstractService<IMemoryContext, IMemoryListener> {
+export class MemoryService extends AbstractService<IMemoryContext> {
 
 	public constructor(dispatcher: IDispatcher) {
 		super('Memory', dispatcher);
-		this._commandEmitter.on('memoryChanged', this.handleMemoryChanged);
+		this.on('memoryChanged', this.handleMemoryChanged);
 	}
 
 	public getChildren(context: IMemoryContext) {
