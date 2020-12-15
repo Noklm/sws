@@ -166,23 +166,19 @@
 				"configurationAttributes": {
 					"launch": {
 						"required": [
-							"program"
+							"program",
+							"tool",
+							"device",
+							"interface",
+							"interfaceClock",
+							"gdbLocation",
+							"packPath"
 						],
 						"properties": {
 							"program": {
 								"type": "string",
 								"description": "Absolute path to a elf file.",
 								"default": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf"
-							},
-							"atbackendHost": {
-								"type": "string",
-								"description": "Host where atbackend is running.",
-								"default": "127.0.0.1"
-							},
-							"atbackendPort": {
-								"type": "number",
-								"description": "websocket port to connect to.",
-								"default": 4710
 							},
 							"tool": {
 								"type": "string",
@@ -204,11 +200,17 @@
 								],
 								"default": "UPDI"
 							},
+							"interfaceClock":{
+								"type":"number",
+								"description":"The clock frequency used by the debug interface in Hz",
+								"default":500000
+							},
 							"interfaceProperties": {
 								"type": "InterfaceType",
 								"description": "",
 								"default": {
-									"UpdiClock": 2000000,
+									"JtagProgClock": 500000,
+									"JtagDbgClock": 500000,
 									"KeepTimersRunning": true
 								}
 							},
@@ -254,7 +256,7 @@
 							},
 							"gdbLocation": {
 								"type": "string",
-								"description": "Path to the GDB instance to use.",
+								"description": "Path to the AVR-GDB instance.",
 								"default": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe"
 							},
 							"bootSegment": {
@@ -294,10 +296,7 @@
 						"tool": "${config:sws.config.TOOL}",
 						"device": "${config:sws.config.CORE}",
 						"interface": "${config:sws.config.INTERFACE}",
-						"interfaceProperties": {
-							"UpdiClock": 2000000,
-							"KeepTimersRunning": true
-						},
+						"interfaceClock": 500000,
 						"launchSuspended": true,
 						"launchAttached": true,
 						"cacheFlash": true,
