@@ -242,16 +242,15 @@ export class SwsDebugSession extends DebugSession{
                 return;
             }
 
-            // #TODO: tester sans les await qui semblent non obligatoires
-            await this._tool.connect(toolContext.ID);
-            await this._tool.checkFirmware(toolContext.ID);
+            this._tool.connect(toolContext.ID);
+            this._tool.checkFirmware(toolContext.ID);
             let properties: IToolProperties = {
                 InterfaceName: args.interface,
                 PackPath: args.packPath,
                 DeviceName: args.device,
                 InterfaceProperties: args.interfaceProperties
             };
-            await this._tool.setProperties(toolContext.ID, properties);
+            this._tool.setProperties(toolContext.ID, properties);
 
             if (!args.noDebug) {
                 this._stream.setLogBits(0xFFFFFFFF);
