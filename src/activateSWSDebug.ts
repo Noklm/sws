@@ -25,8 +25,7 @@ class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory 
 class SwsConfigurationProvider implements vscode.DebugConfigurationProvider {
 
     /**
-     * program must be entered to debug it
-     * TODO: add more checks to resolve configuration
+     * program, interface, tool, gdbLocation ant packPath must be entered to debug an AVR
      */
     resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: SwsDebugConfiguration, token?: CancellationToken): ProviderResult<SwsDebugConfiguration> {
 
@@ -36,11 +35,39 @@ class SwsConfigurationProvider implements vscode.DebugConfigurationProvider {
             });
         }
 
+        if (!config.interface) {
+            return vscode.window.showInformationMessage("Please give a debug interface").then(_ => {
+                return undefined;	// abort launch
+            });
+        }
+
+        if (!config.tool) {
+            return vscode.window.showInformationMessage("Please give a tool").then(_ => {
+                return undefined;	// abort launch
+            });
+        }
+
+        if (!config.gdbLocation) {
+            return vscode.window.showInformationMessage("Please give an AVR-GDB path").then(_ => {
+                return undefined;	// abort launch
+            });
+        }
+
+        if (!config.packPath) {
+            return vscode.window.showInformationMessage("Please give an pack path linked to your target").then(_ => {
+                return undefined;	// abort launch
+            });
+        }
+
+        // Force to use avr-gdb until as long as we don't know how to do whithout
+        config.useGdb = true;
         config.tool = `com.atmel.avrdbg.tool.${config.tool}`;
-
-
         return config;
     }
+    
+    /**
+     * Create interface properties based on the given interface
+     */
     resolveDebugConfigurationWithSubstitutedVariables?(folder: WorkspaceFolder | undefined, debugConfiguration: SwsDebugConfiguration, token?: CancellationToken): ProviderResult<DebugConfiguration>{
         if (!debugConfiguration.interfaceProperties) {
             switch (debugConfiguration.interface) {

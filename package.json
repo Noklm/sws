@@ -170,7 +170,6 @@
 							"tool",
 							"device",
 							"interface",
-							"interfaceClock",
 							"gdbLocation",
 							"packPath"
 						],
