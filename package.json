@@ -291,11 +291,14 @@
 						"type": "sws",
 						"request": "launch",
 						"name": "Sws Debug",
-						"program": "${workspaceFolder}\\debug\\TESTEUR_IR_PORTE_00_01.elf",
-						"tool": "${config:sws.config.TOOL}",
+						"program": "${workspaceFolder}\\output\\${config:sws.config.TARGET}\\TESTEUR_${config:sws.config.TARGET}.elf",
 						"device": "${config:sws.config.CORE}",
+						"tool": "${config:sws.config.TOOL}",
 						"interface": "${config:sws.config.INTERFACE}",
 						"interfaceClock": 500000,
+						"useGdb": true,
+						"gdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
+						"packPath": "C:/toolchains/packs/atmel/${config:sws.config.PACK}/${config:sws.config.PACK_VERSION}/Atmel.${config:sws.config.PACK}.pdsc",
 						"launchSuspended": true,
 						"launchAttached": true,
 						"cacheFlash": true,
@@ -303,23 +306,8 @@
 						"preserveEeprom": true,
 						"progFlashFromRam": true,
 						"ramSnippetAddress": "0x20000000",
-						"useGdb": true,
-						"gdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
 						"bootSegment": 2,
-						"packPath": "C:/toolchains/packs/atmel/${config:sws.config.PACK}/${config:sws.config.PACK_VERSION}/Atmel.${config:sws.config.PACK}.pdsc",
 						"noDebug": true
-					}
-				],
-				"configurationSnippets": [
-					{
-						"label": "SWS Debug: Launch",
-						"description": "A new configuration for 'debugging' a atmel target.",
-						"body": {
-							"type": "sws",
-							"request": "launch",
-							"name": "Ask for file name",
-							"program": "^\"\\${workspaceFolder}/\\debug/TESTEUR_IR_PORTE_00_01.elf\""
-						}
 					}
 				]
 			}
