@@ -191,7 +191,7 @@ export class SwsDebugSession extends DebugSession{
         const self = this;
         this._dispatcher.progressHandler(new ProgressReporter('Launcher', this));
 
-        // If TCF channel not opened after 1s timeout stop launching
+        // If TCF channel not opened stop launching
         if (this._locator.isChannelOpened) {
 
             /* Once a device has been instantiated, we need to actually launch with a module */   
@@ -263,7 +263,7 @@ export class SwsDebugSession extends DebugSession{
         
     }
     private activeBreakpointIds = new Array<string>();
-    /* TODO: this is called once PER SOURCE FILE. Need to extend acitveBreakpoints etc */
+    /* TODO: this is called once PER SOURCE FILE. Need to extend activeBreakpoints etc */
     protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
 
         let self = this;
@@ -419,10 +419,15 @@ export class SwsDebugSession extends DebugSession{
             default:
                 self._stackTrace.getContext(<string>stackTraceContextId).then(context => {
                     self._expressions.compute(context, 'C', args.expression).then((expression) => {
+                        
                         response.body.result = expression.Val.trim();
                         response.body.type = expression.Type;
-
-                        self._expressions.dispose(expression.ID);
+                        if (expression.Numchildren !== 0) {
+                            response.body.variablesReference = this._hasher.hash(expression.ID);
+                        } else {
+                            self._expressions.dispose(expression.ID);
+                        }
+                        // self._expressions.dispose(expression.ID);
 
                         this.sendResponse(response);
                     }).catch((error: Error) => {
@@ -458,8 +463,7 @@ export class SwsDebugSession extends DebugSession{
                 
             };
             this.sendResponse(response);
-        }
-        else{
+        } else{
             let frames: IStackTraceContext[];
             self._processes.contexts.forEach(async (context, parentId) => {
 
@@ -501,8 +505,15 @@ export class SwsDebugSession extends DebugSession{
                     let struct = await self._expressions.getContext(scopeId);
                     let fields = await self._expressions.getChildrenRange(scopeId, struct.Numchildren);
                     fields.forEach((field) => {
+                        let variable: any = new Variable(field.Expression, field.Val);
+                      
+                        if (field.Numchildren !== 0) {
+                            variable.variablesReference = this._hasher.hash(field.ID);
+                        } else {
+                            self._expressions.dispose(field.ID);
+                        }
                         response.body.variables.push(
-                            new Variable(field.Expression, field.Val)
+                            variable
                         );
                     });
                     this.sendResponse(response);
