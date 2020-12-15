@@ -1,7 +1,7 @@
 'use strict';
 
 import { EventEmitter } from 'events';
-import { IService, IProgressEventHandler } from './services/IService';
+import { IProgressEventHandler } from './services/IService';
 
 export interface IDispatcher extends EventEmitter{
 	sendCommand(serviceName: string, commandName: string, args: any[]): Promise<string>;
