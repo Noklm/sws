@@ -224,7 +224,7 @@ export class SwsDebugSession extends DebugSession{
                 self.goto('main');
             });
 
-            // Connects with a debug tool (atmelice, nedbg, ...)
+            // Recover all programming tools available
             const attachedTools: ITool[] = await (await this._tool.getAttachedTools()).filter((tool: ITool) => {
                 return tool.ToolType === args.tool;
             });
@@ -242,6 +242,7 @@ export class SwsDebugSession extends DebugSession{
                 return;
             }
 
+            // Connects with a debug tool (atmelice, nedbg, ...)
             this._tool.connect(toolContext.ID);
             this._tool.checkFirmware(toolContext.ID);
             let properties: IToolProperties = {
