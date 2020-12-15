@@ -12,7 +12,8 @@ interface IUpdi extends IKeepTimersRunning {
  * Interface that describes the JTAG interface
  */
 interface IJtag extends IKeepTimersRunning {
-    JtagClock: number;
+    JtagProgClock: number;
+    JtagDbgClock: number;
 }
 
 /**
