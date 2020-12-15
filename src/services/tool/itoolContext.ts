@@ -17,10 +17,6 @@ export interface IToolContext extends IContext {
 	MajorFirmwareVersionOnDisk: number;
 	MinorFirmwareVersionOnDisk: number;
 	CanEraseXmegaPages: number;
-
-	toString(): string;
-	connect(): void;
-	tearDownTool(): void;
 }
 
 export interface IToolProperties extends IProperties {
