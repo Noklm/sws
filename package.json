@@ -4,7 +4,7 @@
 	"description": "Debug des systèmes AVR",
 	"version": "1.0.0",
 	"publisher": "JDE",
-	"icon": "images/sws.png",
+	"icon": "images/sws-debug-icon.png",
 	"repository": {
 		"url": "https://github.com/juliendland/sws"
 	},
