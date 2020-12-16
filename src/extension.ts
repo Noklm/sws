@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 	activateSWSDebug(context);
 
 	const activateSWSTerminal = (e?: vscode.ConfigurationChangeEvent) => {
-		const compiler = vscode.workspace.getConfiguration('sws.config');
+		const compiler = vscode.workspace.getConfiguration('sws');
 		vscode.window.activeTerminal?.dispose();
 		const options: vscode.TerminalOptions = new SWSTerminalOptions(compiler.config);
 		const terminal = vscode.window.createTerminal(options);

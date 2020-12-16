@@ -460,7 +460,6 @@ export class SwsDebugSession extends DebugSession{
                 response.body.variables.push(
                     new Variable(context.Name, valueString)
                 );
-                
             };
             this.sendResponse(response);
         } else{
@@ -494,7 +493,6 @@ export class SwsDebugSession extends DebugSession{
                             }
                             /* Build the variable from the expression*/
                             response.body.variables.push(variable);
-
 
                             if (--childrenToEvaluate === 0) {
                                 this.sendResponse(response);
