@@ -1,7 +1,13 @@
 # SWS Extension
 
-SWS Debugger est une extension VSCode permettant de debugger des systèmes embarqués basés sur des micro-contrôleurs Atmel (ATMega, AVR, ATtiny, ...). L'idée de base de cette extension est d'avoir un seul outil, pour le developpement firmware, intégré à notre éditeur: VSCode.\
-Elle permettrait de developper des nouveaux firmwares sans dépendances avec des IDEs au fonctionnement parfois flous. De plus, il est très difficile (voir impossible) d'utiliser Atmel Studio 7 pour une session de debug avec des fichiers sources externes. Enfin il sera plus aisé de migrer vers des nouveaux microcontrôleurs tel que l'avr128da48, l'attiny817 et de figer leurs dépendances (version avr-gcc, version du pack).
+SWS est une extension permettant de debugger des systèmes embarqués basés sur des micro-contrôleurs AVR (ATMega, AVR-Dx, ATtiny, ...). L'idée de base de cette extension est d'avoir un outil pour le developpement firmware (compilateur, programmeur et debugueur), intégré à VSCode.\
+
+## Controle de son environnement de travail
+ASF7 est un IDE complexe. Il est difficile de figer son environnement de travail car il met à jour ces outils (toolchain, pack, makefile ...) régulièrement sans que son utilisateur le sache./
+VSCode ne vous mache pas le travail, ce qui demande plus de connaissances. En revanche cela permet de controler son environnement de travail. Des nouveaux firmwares seraient developpés sans dépendances avec des IDEs au fonctionnement flous et un environnement contrôlé qu'il est possible de figer. Donc il sera plus aisé de migrer vers des nouveaux microcontrôleurs tel que l'avr128da48, l'attiny817 et de figer leurs dépendances (version avr-gcc, version du pack, makefile ...).
+
+## Debugger
+Utiliser ASF7 pour débugger un programme extérieur à l'IDE s'avère très compliqué. C'est pourquoi cette extension prend tout son sens. En effet, elle permet de débugger des programmes pour des cibles AVR même s'ils sont développés extérieurement.
 
 ## Nouveau makefile
 
@@ -33,7 +39,7 @@ Ces commandes de base sont gérées par le makefile.
 ## Exemples d'utilisation
 
 ## Configuration typique (launch.json)
-Avant de pouvoir débugger avec l'extension il vous faudra une configuration contenu dans un fichier nommé launch.json dans le dossier .vscode
+Avant de pouvoir débugger avec l'extension il vous faudra une configuration contenu dans un fichier nommé launch.json situé dans le dossier .vscode
 
 Si ce fichier n'existe pas il est automatiquement créer en passant par l'onglet "Run and Debug" et en cliquant sur "créer un fichier launch.json" ensuite il vous faudra choisir l'environnement de débug: choisissez "C (AVR-GDB)". Le fichier sera automatiquement généré. La plupart des paramètres n'ont pas besoin d'être modifiés: ils sont liés aux settings que vous avez rentrés pour l'extension SWS, libre à vous de les modifier.
 
@@ -48,10 +54,7 @@ Si un launch.json existe déjà et qu'aucune configuration ne correspond à "C (
     "tool": "atmelice",
     "device": "attiny817",
     "interface": "UPDI",
-    "interfaceProperties": {
-        "UpdiClock": 2000000,
-        "KeepTimersRunning": true
-    },
+    "interfaceClock": 500000,
     "launchSuspended": true,
     "launchAttached": true,
     "cacheFlash": true,
@@ -67,37 +70,36 @@ Si un launch.json existe déjà et qu'aucune configuration ne correspond à "C (
 }
 ```
 ### Lancer une session de debug
-Une fois votre configuration paramétrée cliquez sur le bouton play ou F5 pour démarrer votre session de débug, comme le montre le GIF ci-dessous.
-
-Au démarrage l'éxécution du programme sera directement stoppée au début du main.
+Une fois votre configuration paramétrée, cliquez sur le bouton "play" ou "F5" pour démarrer votre session de débug. 
+Le GIF ci-dessous montre une session de débug.
+Le fichier elf est d'abord programmé, nous pouvons suivre sa progression avec un spinner en bas de la fenêtre. Ensuite le programme est éxécuté et mis en pause au début de la fonction main. Enfin le fichier source s'affiche et vous pouvez naviguer avec les commandes de debug classiques (run, step in, ...)
 
 ![](images/example_sws.gif)
 
+Vous êtes maintenant en mesure de débugger votre système.
+
 ## Description des paramètres:
 
-| Paramètre           | Description                                                  |
-| :------------------ | :----------------------------------------------------------- |
-| type                | Type de la session de debug, laisser sws                     |
-| request             | Laisser launch pour lancer une session de debug "sws"        |
-| name                | Nom de la session affiché dans VSCode                        |
-| program             | Binaire à debugger (.elf)                                    |
-| tool                | Outil de programmation (atmelice, avrdragon, nedbg,...)      |
-| device              | Micro-contrôleur (attiny817, avr128da48, atmega644p)         |
-| interface           | Interface de programmation (UPDI, JTAG, SWD, ...)            |
-| interfaceProperties | Propriétés de l'interface de programmation                   |
-| InterfaceClock      | Frequence de l'interface de programmation (Hz),              |
-| launchSuspended     | Si vrai arrete l'exécution à l'entrée du main                |
-| launchAttached      | TODO                                                         |
-| cacheFlash          | TODO                                                         |
-| preserveEeprom      | Préserve l'eeprom lorsque vous demarrez une session de debug |
-| progFlashFromRam    | TODO                                                         |
-| ramSnippetAddress   | TODO                                                         |
-| useGdb              | Laisser à True, car debug sans gdb impossible pour le moment |
-| gdbLocation         | Chemin vers GDB                                              |
-| bootSegment         | Préserve l'eeprom lorsque vous demarrez une session de debug |
-| packPath            | Chemin vers le pack atmel (.pdsc) du mico-contrôleur         |
-
-Certain microcontroleur, comme l'atmega644, ne possède pas de pack c'est une nouveauté pour donner des détails sur l'architecture mémoire du micro.
+| Paramètre         | Description                                                  |
+| :---------------- | :----------------------------------------------------------- |
+| type              | Type de la session de debug, laisser sws                     |
+| request           | Laisser launch pour lancer une session de debug "sws"        |
+| name              | Nom de la session affiché dans VSCode                        |
+| program           | Binaire à debugger (.elf)                                    |
+| tool              | Outil de programmation (atmelice, avrdragon, nedbg,...)      |
+| device            | Micro-contrôleur (attiny817, avr128da48, atmega644p)         |
+| interface         | Interface de programmation (UPDI, JTAG, SWD, ...)            |
+| InterfaceClock    | Frequence de l'interface de programmation (Hz),              |
+| launchSuspended   | Si vrai arrete l'exécution à l'entrée du main                |
+| launchAttached    | TODO                                                         |
+| cacheFlash        | TODO                                                         |
+| preserveEeprom    | Ecrit le fuse associé                                        |
+| progFlashFromRam  | TODO                                                         |
+| ramSnippetAddress | TODO                                                         |
+| useGdb            | Laisser à True, car debug sans gdb impossible pour le moment |
+| gdbLocation       | Chemin vers AVR-GDB                                          |
+| bootSegment       | TODO                                                         |
+| packPath          | Chemin vers le pack atmel (.pdsc) du mico-contrôleur         |
 
 # Release Notes
 
@@ -118,3 +120,4 @@ Cette extension vous permet de:
 * Voir les variables locales de chaque stack frame
 * Afficher chaque champ d'une structure
 * Suivre l'évolution d'une variable globale dans l'espace "watch"
+* Voir la valeur d'une variable en passant la souris dessus
