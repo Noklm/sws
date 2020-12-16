@@ -11,7 +11,7 @@ import {
     Source,
     Scope,
     Variable,
-    Breakpoint
+    Breakpoint,
 } from 'vscode-debugadapter';
 import { WebsocketDispatcher } from './websocketDispatcher';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -158,8 +158,7 @@ export class SwsDebugSession extends DebugSession{
     }
 
     protected disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments): void {
-        // super.disconnectRequest(response, args);
-
+        
         /* Terminate the processes */
         this._processes.contexts.forEach(context => {
             this._processes.terminate(context.ID);
@@ -189,7 +188,8 @@ export class SwsDebugSession extends DebugSession{
      */
     protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
         const self = this;
-        this._dispatcher.progressHandler(new ProgressReporter('Launcher', this));
+        const launchProgress = new ProgressReporter('Launcher', this);
+        this._dispatcher.on('progress', launchProgress.progress);
 
         // If TCF channel not opened stop launching
         if (this._locator.isChannelOpened) {
@@ -214,6 +214,7 @@ export class SwsDebugSession extends DebugSession{
                 self._processes.launch(args.program, contexts[0], launchParameters)
                     .catch((error) => { 
                         window.showErrorMessage(error.message);
+                        self.sendResponse(response);
                         self.sendEvent(new TerminatedEvent());
                     });
             });
@@ -234,10 +235,12 @@ export class SwsDebugSession extends DebugSession{
                 toolContext = await this._tool.setupTool(attachedTools.pop()!);
             } else if (attachedTools.length === 0) {
                 window.showErrorMessage(`No tool of type: ${args.tool}`);
+                this.sendResponse(response);
                 this.sendEvent(new TerminatedEvent());
                 return;
             } else {
                 window.showErrorMessage(`${attachedTools.length} tools of type ${args.tool}`);
+                this.sendResponse(response);
                 this.sendEvent(new TerminatedEvent());
                 return;
             }
@@ -259,6 +262,7 @@ export class SwsDebugSession extends DebugSession{
             return;
         }
         window.showErrorMessage(`TCF channel not opened`);
+        this.sendResponse(response);
         this.sendEvent(new TerminatedEvent());
         
     }

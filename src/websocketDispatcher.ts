@@ -241,10 +241,7 @@ export class WebsocketDispatcher extends WebSocket implements IDispatcher {
 		let token = +data[0];
 		let eventData = JSON.parse(data[1]);
 
-		this.progressHandlers.forEach(handler => {
-			handler.progress(+eventData['ProgressComplete'], +eventData['ProgressTotal'], eventData['Description']);
-		});
-
+		this.emit('progress', +eventData['ProgressComplete'], +eventData['ProgressTotal'], eventData['Description']);
 		this.log(`[Dispatcher] Progress: ${eventData['ProgressComplete']}`);
 	}
 

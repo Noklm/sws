@@ -23,7 +23,7 @@ export class ProgressReporter implements IProgressEventHandler {
 		this._started = false;
 	}
 
-	public progress(progression: number, max: number, text?: string): void {
+	public progress = (progression: number, max: number, text?: string): void => {
 		let description = text || '';
 		
 		if (this._started) {
@@ -41,5 +41,5 @@ export class ProgressReporter implements IProgressEventHandler {
 		startEvent.body.percentage = progression;
 		this._dbgSession.sendEvent(startEvent);
 		this._started = true;
-	}
+	};
 }
