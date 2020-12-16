@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { IDispatcher } from './../../idispatcher';
 import { IProgressEventHandler, IService } from './../../services/iservice';
 import { IEventHandler } from './../../services/IService';
@@ -6,10 +7,11 @@ import * as data from "./mockCommands.json";
 /**
  * This MockDispatcher is used for tests purpose to mock (simulate) a dispatcher
  */
-export class MockDispatcher implements IDispatcher {
+export class MockDispatcher extends EventEmitter implements IDispatcher {
     private config: { [index: string]: string };
 
     public constructor() {
+        super();
         this.config = data;
     }
 
@@ -23,12 +25,6 @@ export class MockDispatcher implements IDispatcher {
     connect(callback: (dispatcher: IDispatcher) => void) {
         throw new Error('Method not implemented.');
      };
-
-	public eventHandler(service: IService): void {
-		this.log(`[Dispatcher] Registering event handler for ${service.getName()}`);
-		service.registerCommands();
-		// this.eventEmitter.on(service.getName(), service.eventHandler);
-	}
 
     /**
      *
