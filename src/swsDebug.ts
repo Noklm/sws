@@ -120,7 +120,7 @@ export class SwsDebugSession extends DebugSession{
         args.supportsVariableType = true;
 
         // make VS Code to use 'evaluate' when hovering over source
-        // response.body.supportsEvaluateForHovers = true;
+        response.body.supportsEvaluateForHovers = true;
 
         // make VS Code to show a 'step back' button
         // response.body.supportsStepBack = true;
@@ -336,22 +336,12 @@ export class SwsDebugSession extends DebugSession{
         this._processes.contexts.forEach(async (context, key) => {
             frames = await self._stackTrace.getChildren(context.ID);
             frames.forEach((frame) => {
-                let frameArgs: string[] = [];
-
                 /* Sort frames based on the Order (depth in the stack) */
                 let sortedArgs = frame.Args.sort((a, b) => {
                     return a.Order - b.Order;
                 });
-
-                /* Create list of all arguments to the function frame */
-                sortedArgs.forEach(frameArg => {
-                    frameArgs.push(
-                        `${frameArg.Type.trim()} ${frameArg.Name.trim()} = ${frameArg.Value.trim()}`
-                    );
-                });
-
                 /* Create frame name based on function and arguments */
-                let frameName = `${frame.Func.trim()} (${frameArgs.join(', ')})`;
+                let frameName = `${frame.Func.trim()}`;
 
                 /* Create the source */
                 let remappedFile = path.normalize(frame.File.trim());
