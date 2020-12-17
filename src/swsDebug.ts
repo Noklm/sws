@@ -54,7 +54,7 @@ export class SwsDebugSession extends DebugSession{
 
     // Entities that are used to communicate over TCF to the AVR Target
     private _dispatcher: IDispatcher;   // Client side
-    private _atbackend: ChildProcessWithoutNullStreams; // AVR target side
+    private _atbackend: ChildProcessWithoutNullStreams | undefined; // AVR target side
 
     // TCF Services used to debug an AVR Target
     private _locator: LocatorService;
@@ -70,7 +70,7 @@ export class SwsDebugSession extends DebugSession{
     private _breakpoints: BreakpointsService;
 
 
-    public constructor(atbackend: ChildProcessWithoutNullStreams, dispatcher:WebsocketDispatcher) {
+    public constructor(dispatcher: WebsocketDispatcher, atbackend?: ChildProcessWithoutNullStreams) {
         super();
         this._dispatcher = dispatcher;
         this._atbackend = atbackend;
@@ -170,9 +170,12 @@ export class SwsDebugSession extends DebugSession{
         });
 
         // Kill atbackend
-        if (this._atbackend.kill()) {
-            response.success = true;
+        if (this._atbackend) {
+            if (this._atbackend.kill()) {
+                response.success = true;
+            }
         }
+        
         this.sendResponse(response);
     }
 
