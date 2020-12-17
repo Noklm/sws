@@ -1,10 +1,10 @@
 # SWS Extension
 
-SWS est une extension permettant de debugger des systèmes embarqués basés sur des micro-contrôleurs AVR (ATMega, AVR-Dx, ATtiny, ...). L'idée de base de cette extension est d'avoir un outil pour le developpement firmware (compilateur, programmeur et debugueur), intégré à VSCode.\
+SWS permet de debugger des systèmes embarqués basés sur des micro-contrôleurs AVR (ATMega, AVR-Dx, ATtiny, ...). L'objectif de cette extension est d'aider au developpement sur AVR tout en gardant le contrôle sur son environnement de travail. En effet, il vous faudra choisir votre compilateur, créer votre Makefile ...
 
 ## Controle de son environnement de travail
-ASF7 est un IDE complexe. Il est difficile de figer son environnement de travail car il met à jour ces outils (toolchain, pack, makefile ...) régulièrement sans que son utilisateur le sache./
-VSCode ne vous mache pas le travail, ce qui demande plus de connaissances. En revanche cela permet de controler son environnement de travail. Des nouveaux firmwares seraient developpés sans dépendances avec des IDEs au fonctionnement flous et un environnement contrôlé qu'il est possible de figer. Donc il sera plus aisé de migrer vers des nouveaux microcontrôleurs tel que l'avr128da48, l'attiny817 et de figer leurs dépendances (version avr-gcc, version du pack, makefile ...).
+ASF7 est un outil complexe où il est difficile de figer son environnement de travail. En effet, il peut y avoir des mis-à-jour des toolchains, des packs, le makefile est généré dynamiquement...
+VSCode est seulement un editeur de texte qui ne vous mache pas le travail. Cela demande plus de connaissances mais vous contrôlerez totalement votre environnement de travail. Vos nouveaux firmwares seraient developpés sans dépendances et sans inconnues. Donc il sera plus aisé de migrer vers des nouveaux microcontrôleurs AVR ainsi que de figer leurs versions d'AVR-GCC, du pack ou du makefile.
 
 ## Debugger
 Utiliser ASF7 pour débugger un programme extérieur à l'IDE s'avère très compliqué. C'est pourquoi cette extension prend tout son sens. En effet, elle permet de débugger des programmes pour des cibles AVR même s'ils sont développés extérieurement.
@@ -39,11 +39,13 @@ Ces commandes de base sont gérées par le makefile.
 ## Exemples d'utilisation
 
 ## Configuration typique (launch.json)
-Avant de pouvoir débugger avec l'extension il vous faudra une configuration contenu dans un fichier nommé launch.json situé dans le dossier .vscode
+Avant de pouvoir débugger avec l'extension il vous faudra une configuration contenu dans un fichier nommé launch.json situé dans le dossier .vscode.
 
-Si ce fichier n'existe pas il est automatiquement créer en passant par l'onglet "Run and Debug" et en cliquant sur "créer un fichier launch.json" ensuite il vous faudra choisir l'environnement de débug: choisissez "C (AVR-GDB)". Le fichier sera automatiquement généré. La plupart des paramètres n'ont pas besoin d'être modifiés: ils sont liés aux settings que vous avez rentrés pour l'extension SWS, libre à vous de les modifier.
+Si ce fichier n'existe pas il est automatiquement créé en passant par l'onglet "Run and Debug" et en cliquant sur "créer un fichier launch.json" ensuite il vous faudra choisir l'environnement de débug "C (AVR-GDB)". Le fichier sera automatiquement généré. La plupart des paramètres n'ont pas besoin d'être modifiés: ils sont liés aux settings que vous avez rentrés pour l'extension SWS, libre à vous de les modifier.
 
 Si un launch.json existe déjà et qu'aucune configuration ne correspond à "C (AVR-GDB)" cliquer sur le bouton "ajouter une configuration" dans le fichier.
+
+Le JSON ci-dessous est un exemple de configuration.
 
 ```JSON
 {
@@ -72,7 +74,7 @@ Si un launch.json existe déjà et qu'aucune configuration ne correspond à "C (
 ### Lancer une session de debug
 Une fois votre configuration paramétrée, cliquez sur le bouton "play" ou "F5" pour démarrer votre session de débug. 
 Le GIF ci-dessous montre une session de débug.
-Le fichier elf est d'abord programmé, nous pouvons suivre sa progression avec un spinner en bas de la fenêtre. Ensuite le programme est éxécuté et mis en pause au début de la fonction main. Enfin le fichier source s'affiche et vous pouvez naviguer avec les commandes de debug classiques (run, step in, ...)
+Le fichier elf est d'abord programmé et un spinner indique la progression. Ensuite le programme est exécuté puis mis en pause au début de la fonction main(). Enfin le fichier source s'affiche et vous pouvez naviguer avec les commandes de debug classiques (run, step in, ...)
 
 ![](images/example_sws.gif)
 
@@ -89,7 +91,7 @@ Vous êtes maintenant en mesure de débugger votre système.
 | tool              | Outil de programmation (atmelice, avrdragon, nedbg,...)      |
 | device            | Micro-contrôleur (attiny817, avr128da48, atmega644p)         |
 | interface         | Interface de programmation (UPDI, JTAG, SWD, ...)            |
-| InterfaceClock    | Frequence de l'interface de programmation (Hz),              |
+| InterfaceClock    | Fréquence de l'interface de programmation (Hz)               |
 | launchSuspended   | Si vrai arrete l'exécution à l'entrée du main                |
 | launchAttached    | TODO                                                         |
 | cacheFlash        | TODO                                                         |
@@ -107,11 +109,11 @@ Vous êtes maintenant en mesure de débugger votre système.
 Implémentation des commandes de base de l'extension: compiler, programmer.
 
 ### 1.0.0
-Création du "debug adapter" permettant de debugger n'importe quel microcontrôleur Atmel.
+Création du "debug adapter" permettant de debugger n'importe quel microcontrôleur Atmel en utilisant AVR-GDB.
 Le DA permet de communiquer avec ATBackend afin de connaitre l'état du microcontroleur durant l'exécution d'un processus par ce dernier.
 
 Cette extension vous permet de:
-* Mettre en pause l'éxécution du processus sur l'AVR
+* Mettre en pause l'exécution du processus sur l'AVR
 * Poser des points d'arrêt dans votre fichier source (.c)
 * Avancer step by step dans le programme
 * Avancer jusqu'à la fin d'une fonction
