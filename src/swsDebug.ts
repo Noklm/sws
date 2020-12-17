@@ -343,10 +343,7 @@ export class SwsDebugSession extends DebugSession{
         this._processes.contexts.forEach(async (context, key) => {
             frames = await self._stackTrace.getChildren(context.ID);
             frames.forEach((frame) => {
-                /* Sort frames based on the Order (depth in the stack) */
-                let sortedArgs = frame.Args.sort((a, b) => {
-                    return a.Order - b.Order;
-                });
+
                 /* Create frame name based on function and arguments */
                 let frameName = `${frame.Func.trim()}`;
 
@@ -373,24 +370,21 @@ export class SwsDebugSession extends DebugSession{
 
     /* Scopes describes a collection of variables */
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
-        let self = this;
         response.body = {
             scopes: []
         };
-        let frames: IStackTraceContext[];
-        this._processes.contexts.forEach(async (context,parentId) => {
 
-            frames = await self._stackTrace.getChildren(parentId);
-            if (frames.length > 0) {
+        this._processes.contexts.forEach(async (_,parentId) => {
+            const frames: IStackTraceContext[]|undefined = await this._stackTrace.getChildren(parentId);
+            // if at least one stack frame exists we start creating scope for each frame
+            if (frames && frames.length > 0) {
                 response.body.scopes.push(new Scope('Local', this._hasher.hash(frames.shift()!.ID)));
                 frames.forEach((frame) => {
                     response.body.scopes.push(new Scope(frame.Func, this._hasher.hash(frame.ID), false));
                 });
             }
-            
             /* Push the registers scope */
             response.body.scopes.push(new Scope('Registers', this._hasher.hash('Registers'), false));
-
             this.sendResponse(response);
         });
     }
@@ -519,7 +513,7 @@ export class SwsDebugSession extends DebugSession{
     
     /* Resume is any form of resume */
     private resume(mode: ResumeMode, threadID?: number): void {
-         this._runControl.contexts.forEach((context,id) => {
+        this._runControl.contexts.forEach((context, id) => {
             if (!threadID || threadID === this._hasher.hash(context.ID)) {
                 this._runControl.resume(id, mode).catch((error: Error) => console.log(error.message));
             }
@@ -527,7 +521,7 @@ export class SwsDebugSession extends DebugSession{
     }
 
     private suspend(threadID?: number): void {
-        this._runControl.contexts.forEach((context,id) => {
+        this._runControl.contexts.forEach((context, id) => {
             if (threadID === this._hasher.hash(context.ID) || threadID === 0) {
                 this._runControl.suspend(id).catch((error: Error) => console.log(error.message));
             }
