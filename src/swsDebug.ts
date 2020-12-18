@@ -324,6 +324,7 @@ export class SwsDebugSession extends DebugSession{
         };
 
         this._processes.contexts.forEach(context => {
+
             response.body.threads.push(
                 new Thread(this._hasher.hash(context.RunControlId), context.Name));
         });
@@ -354,9 +355,6 @@ export class SwsDebugSession extends DebugSession{
                 let source = new Source(path.basename(remappedFile),
                     this.convertDebuggerPathToClient(remappedFile),
                     0 /* 0 == Do not use source request to get content */
-                    // this.hashString(frame.File.trim()),
-                    // this.convertDebuggerPathToClient(remappedFile),
-                    // this.convertDebuggerPathToClient(remappedFile)
                 );
                 console.log(`[SOURCE] ${source.path} => ${source.name}`);
 

@@ -8,7 +8,7 @@ export class NumericalHashCode {
 	public hash(s: string): number {
 
 		if (this.inverseHashes.has(s)) {
-			return this.inverseHashes.get(s) as number;
+			return this.inverseHashes.get(s)!;
 		}
 
 
