@@ -76,7 +76,7 @@ Une fois votre configuration paramétrée, cliquez sur le bouton "play" ou "F5" 
 Le GIF ci-dessous montre une session de débug.
 Le fichier elf est d'abord programmé et un spinner indique la progression. Ensuite le programme est exécuté puis mis en pause au début de la fonction main(). Enfin le fichier source s'affiche et vous pouvez naviguer avec les commandes de debug classiques (run, step in, ...)
 
-![](images/example_sws.gif)
+![](images/sws_operation.gif)
 
 Vous êtes maintenant en mesure de débugger votre système.
 

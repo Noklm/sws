@@ -1,7 +1,7 @@
 {
 	"name": "sws",
 	"displayName": "sws",
-	"description": "Debug des systèmes AVR",
+	"description": "AVR Debugger support for VSCode",
 	"version": "1.0.0",
 	"publisher": "JDE",
 	"icon": "images/sws-debug-icon.png",
