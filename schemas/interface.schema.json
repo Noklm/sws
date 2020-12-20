@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id":"./interface.schema.json",
+    "title":"Programmation interface",
+    "interface":{
+        "type":"object",
+        "properties": {
+            "name":{
+                "type":"string",
+                "enum": ["UPDI", "JTAG", "SWD"]
+            },
+            "interfaceProperties":{
+                "type":"object",
+                "properties": {
+                    "keepTimersRunning":{
+                        "type":"boolean"
+                    }
+                },
+                "maxProperties": 2
+            }
+        },
+        "allOf": [
+            {
+              "if": {
+                "properties": { "name": { "const": "UPDI" } }
+              },
+              "then": {
+                "properties": { "interfaceProperties": { "properties":{"updiClock":{"type":"number"}},"required": ["updiClock"]}}
+              }
+            },
+            {
+              "if": {
+                "properties": { "name": { "const": "JTAG" } }
+              },
+              "then": {
+                "properties": { "interfaceProperties": {"properties":{ "jtagClock":{"type":"number"}}}}
+              }
+            },
+            {
+              "if": {
+                "properties": { "name": { "const": "SWD" } }
+              },
+              "then": {
+                "properties": { "interfaceProperties": { "properties":{"swdClock":{"type":"number"}}}}
+              }
+            }
+        ]
+    }
+}

@@ -17,14 +17,37 @@
 	"activationEvents": [
 		"onDebug",
 		"onCommand:sws.showConfig",
+		"onCommand:sws.addScript",
 		"onCommand:sws.build",
 		"onCommand:sws.clean",
 		"onCommand:sws.flash",
 		"workspaceContains:**/src",
+		"workspaceContains:.vscode/sws.json",
 		"onLanguage:c"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"jsonValidation": [
+			{
+			  "fileMatch": "sws.json",
+			  "url": "./schemas/sws.schema.json"
+			}
+		],
+		"views": {
+			"explorer": [
+				{
+				"id": "swsScripts",
+				"name": " SWS Scripts",
+				"when": "displaySwsScripts"
+				}
+			]
+		},
+		"viewsWelcome": [
+			{
+			  "view": "swsScripts",
+			  "contents": "No sws scripts found.\n[Add Script](command:sws.addScript)"
+			}
+		],
 		"configuration": {
 			"title": "SWS",
 			"properties": {
