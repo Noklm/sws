@@ -236,60 +236,65 @@
 									"KeepTimersRunning": true
 								}
 							},
-							"launchSuspended": {
-								"type": "boolean",
-								"description": "Suspend after launch.",
-								"default": true
-							},
-							"launchAttached": {
-								"type": "boolean",
-								"description": "Attach after launch.",
-								"default": true
-							},
-							"cacheFlash": {
-								"type": "boolean",
-								"description": "Enable flash cache.",
-								"default": true
-							},
-							"eraseRule": {
-								"type": "number",
-								"description": "Which erase should be done during programming.",
-								"default": 0
-							},
-							"preserveEeprom": {
-								"type": "boolean",
-								"description": "Preserve EEPROM during launch.",
-								"default": false
-							},
-							"ramSnippetAddress": {
-								"type": "string",
-								"description": "If applicable, address of ram loader.",
-								"default": "0x20000000"
-							},
-							"progFlashFromRam": {
-								"type": "boolean",
-								"description": "Should ram loader be used.",
-								"default": false
-							},
-							"useGdb": {
-								"type": "boolean",
-								"description": "Use GDB as debug engine and evaluator.",
-								"default": true
-							},
-							"gdbLocation": {
-								"type": "string",
-								"description": "Path to the AVR-GDB instance.",
-								"default": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe"
-							},
-							"bootSegment": {
-								"type": "number",
-								"description": "Which memory segment to boot from.",
-								"default": 2
-							},
-							"packPath": {
-								"type": "string",
-								"description": "Path to the Device Support Pack for the device.",
-								"default": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc"
+							"launchParameters":{
+								"type":"object",
+								"properties":{
+									"LaunchSuspended": {
+										"type": "boolean",
+										"description": "Suspend after launch.",
+										"default": true
+									},
+									"LaunchAttached": {
+										"type": "boolean",
+										"description": "Attach after launch.",
+										"default": true
+									},
+									"CacheFlash": {
+										"type": "boolean",
+										"description": "Enable flash cache.",
+										"default": true
+									},
+									"EraseRule": {
+										"type": "number",
+										"description": "Which erase should be done during programming.",
+										"default": 0
+									},
+									"PreserveEeprom": {
+										"type": "boolean",
+										"description": "Preserve EEPROM during launch.",
+										"default": false
+									},
+									"RamSnippetAddress": {
+										"type": "string",
+										"description": "If applicable, address of ram loader.",
+										"default": "0x20000000"
+									},
+									"ProgFlashFromRam": {
+										"type": "boolean",
+										"description": "Should ram loader be used.",
+										"default": false
+									},
+									"UseGdb": {
+										"type": "boolean",
+										"description": "Use GDB as debug engine and evaluator.",
+										"default": true
+									},
+									"GdbLocation": {
+										"type": "string",
+										"description": "Path to the AVR-GDB instance.",
+										"default": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe"
+									},
+									"BootSegment": {
+										"type": "number",
+										"description": "Which memory segment to boot from.",
+										"default": 2
+									},
+									"PackPath": {
+										"type": "string",
+										"description": "Path to the Device Support Pack for the device.",
+										"default": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc"
+									}
+								}
 							},
 							"remapSourcePathFrom": {
 								"type": "string",
@@ -319,17 +324,19 @@
 						"tool": "${config:sws.config.TOOL}",
 						"interface": "${config:sws.config.INTERFACE}",
 						"interfaceClock": 500000,
-						"useGdb": true,
-						"gdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
-						"packPath": "C:/toolchains/packs/atmel/${config:sws.config.PACK}/${config:sws.config.PACK_VERSION}/Atmel.${config:sws.config.PACK}.pdsc",
-						"launchSuspended": true,
-						"launchAttached": true,
-						"cacheFlash": true,
-						"eraseRule": 0,
-						"preserveEeprom": true,
-						"progFlashFromRam": true,
-						"ramSnippetAddress": "0x20000000",
-						"bootSegment": 2,
+						"launchParameters":{
+							"UseGdb": true,
+							"GdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
+							"PackPath": "C:/toolchains/packs/atmel/${config:sws.config.PACK}/${config:sws.config.PACK_VERSION}/Atmel.${config:sws.config.PACK}.pdsc",
+							"LaunchSuspended": true,
+							"LaunchAttached": true,
+							"CacheFlash": true,
+							"EraseRule": 0,
+							"PreserveEeprom": true,
+							"ProgFlashFromRam": true,
+							"RamSnippetAddress": "0x20000000",
+							"BootSegment": 2
+						},
 						"noDebug": true
 					}
 				]

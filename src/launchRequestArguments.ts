@@ -28,22 +28,26 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 	interfaceProperties: InterfaceType;
 
 	// OTHER PROPERTIES
-	launchSuspended: boolean;
-	launchAttached: boolean;
-	cacheFlash: boolean;
-
-	eraseRule: number; // enum
-	preserveEeprom: boolean;
-	ramSnippetAddress: number;
-	progFlashFromRam: boolean;
-
-	useGdb: boolean;
-	gdbLocation: string;
-
-	bootSegment: number; // enum
-
-	packPath: string;
+	launchParameters: ILaunchParameters;
 
 	remapSourcePathFrom: string;
 	remapSourcePathTo: string;
+}
+
+export interface ILaunchParameters{
+	LaunchSuspended: boolean;
+	LaunchAttached: boolean;
+	CacheFlash: boolean;
+
+	EraseRule: number; // enum
+	PreserveEeprom: boolean;
+	RamSnippetAddress: number;
+	ProgFlashFromRam: boolean;
+
+	UseGdb: boolean;
+	GdbLocation: string;
+
+	BootSegment: number; // enum
+
+	PackPath: string;
 }
