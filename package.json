@@ -193,8 +193,7 @@
 							"tool",
 							"device",
 							"interface",
-							"gdbLocation",
-							"packPath"
+							"launchParameters"
 						],
 						"properties": {
 							"program": {
@@ -294,7 +293,8 @@
 										"description": "Path to the Device Support Pack for the device.",
 										"default": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc"
 									}
-								}
+								},
+								"required":["UseGdb", "GdbLocation", "PackPath"]
 							},
 							"remapSourcePathFrom": {
 								"type": "string",
