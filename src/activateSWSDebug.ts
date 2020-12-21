@@ -50,13 +50,13 @@ class SwsConfigurationProvider implements vscode.DebugConfigurationProvider {
             });
         }
 
-        if (!config.gdbLocation) {
+        if (!config.launchParameters.GdbLocation) {
             return vscode.window.showInformationMessage("Please give an AVR-GDB path").then(_ => {
                 return undefined;	// abort launch
             });
         }
 
-        if (!config.packPath) {
+        if (!config.launchParameters.PackPath) {
             return vscode.window.showInformationMessage("Please give an pack path linked to your target").then(_ => {
                 return undefined;	// abort launch
             });

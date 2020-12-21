@@ -198,23 +198,9 @@ export class SwsDebugSession extends DebugSession{
         if (this._locator.isChannelOpened) {
 
             /* Once a device has been instantiated, we need to actually launch with a module */   
-            const launchParameters = {
-                'LaunchSuspended': args.launchSuspended,
-                'LaunchAttached': args.launchAttached,
-                'CacheFlash': args.cacheFlash,
-                'EraseRule': args.eraseRule,
-                'PreserveEeprom': args.preserveEeprom,
-                'RamSnippetAddress': args.ramSnippetAddress,
-                'ProgFlashFromRam': args.progFlashFromRam,
-                'UseGdb': args.useGdb,
-                'GdbLocation': args.gdbLocation,
-                'BootSegment': args.bootSegment,
-                'PackPath': args.packPath
-            };
-
             this._device.once('contextAdded', (eventData: string[]) => {
                 const contexts = <IDeviceContext[]>JSON.parse(eventData[0]);
-                self._processes.launch(args.program, contexts[0], launchParameters)
+                self._processes.launch(args.program, contexts[0], args.launchParameters)
                     .catch((error) => { 
                         window.showErrorMessage(error.message);
                         self.sendResponse(response);
@@ -253,7 +239,7 @@ export class SwsDebugSession extends DebugSession{
             this._tool.checkFirmware(toolContext.ID);
             let properties: IToolProperties = {
                 InterfaceName: args.interface,
-                PackPath: args.packPath,
+                PackPath: args.launchParameters.PackPath,
                 DeviceName: args.device,
                 InterfaceProperties: args.interfaceProperties
             };
