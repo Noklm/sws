@@ -9,6 +9,7 @@ export class ScriptsProvider implements vscode.TreeDataProvider<vscode.TreeItem>
     constructor(projects: Project[]) {
         this.projects = projects;
     }
+
     getChildren(element?: Project): vscode.ProviderResult<vscode.TreeItem[]> {
         if (element === undefined) {
             return this.projects;
@@ -19,17 +20,15 @@ export class ScriptsProvider implements vscode.TreeDataProvider<vscode.TreeItem>
         return element;
     }
 
-    // refresh(): void {
-    //     this._onDidChangeTreeData.fire();
-    // } 
+    refresh(): void {
+        this._onDidChangeTreeData.fire(undefined);
+    } 
 }
 export class Project extends vscode.TreeItem{
-    swingPath: string;
     scripts: Script[];
 
-    constructor(label: string, swingPath: string, scripts: Script[]) {
+    constructor(label: string, scripts: Script[]) {
         super(label, vscode.TreeItemCollapsibleState.Expanded);
-        this.swingPath = swingPath;
         this.scripts = scripts;
     }
 
@@ -41,23 +40,20 @@ export class Project extends vscode.TreeItem{
 export class Script extends vscode.TreeItem implements IScript{
     name: string;
     cmd: string;
-    pathWhereExecute: string;
     
-    constructor(name: string, cmd: string, pathWhereExecute: string) {
+    constructor(name: string, cmd: string) {
         super(name, vscode.TreeItemCollapsibleState.None);
         this.name = name;
         this.cmd = cmd;
         this.contextValue = 'script';
-        this.pathWhereExecute = pathWhereExecute;
     }
 
     execute() {
-        console.log(`Command ${this.name} executed`);
-        let options: vscode.TerminalOptions = {};
-        options.name = "swing terminal";
-        options.cwd = this.pathWhereExecute;
-        let terminal: vscode.Terminal = vscode.window.createTerminal(options);
-        terminal.show();
-        terminal.sendText(this.cmd);
+        if (vscode.window.activeTerminal) {
+            vscode.window.activeTerminal.sendText(this.cmd);
+        } else {
+            vscode.window.showErrorMessage(`No active terminal open one to execute the script`);
+        }
+        
     }
 }

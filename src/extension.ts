@@ -1,25 +1,32 @@
 import * as vscode from 'vscode';
+const fs = require('fs');
 import {
 	SWSTerminalOptions
 } from './sws/terminal';
 import { activateSWSDebug } from './activateSWSDebug';
-import { SwsConfig } from './sws/config';
+import { SwsConfigManager } from './sws/configManager';
+import { IConfigProvider } from './sws/iConfigProvider';
+import { IConfigManager } from './sws/IConfigManager';
+import { IScript } from './sws/iScript';
 
 // this method is called when your extension is activated
 export async function activate(context: vscode.ExtensionContext) {
-	
-	
 	const build = "sws.build";
 	const clean = "sws.clean";
 	const flash = "sws.flash";
 	const showConfig = "sws.showConfig";
 	
 	activateSWSDebug(context);
-	const swsConf = new SwsConfig();
-	const swsConfigFiles = await vscode.workspace.findFiles(swsConf.globPattern, undefined, 1);
-	if(swsConfigFiles && swsConfigFiles.length > 0){
-		vscode.commands.executeCommand('setContext', 'displaySwsScripts', true);
-	}
+	vscode.commands.registerCommand('sws.refreshScripts', (provider: IConfigProvider) => {
+		provider.refresh();
+	});
+	vscode.commands.registerCommand('sws.execute', (contextItem: IScript) => {
+		contextItem.execute();
+
+	});
+	const swsConfManager:IConfigManager<IConfigProvider> = new SwsConfigManager("**/.vscode/sws.json");
+	await swsConfManager.init();
+
 	const activateSWSTerminal = (e?: vscode.ConfigurationChangeEvent) => {
 		const compiler = vscode.workspace.getConfiguration('sws');
 		vscode.window.activeTerminal?.dispose();
@@ -30,12 +37,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	const commandHandler = (msg: String): void => {
 		vscode.window.activeTerminal?.sendText(`make -s ${msg}`);
 	};
-	// let test = swsConf.exists();
+
 	vscode.workspace.onDidChangeConfiguration(
 		activateSWSTerminal,
 		undefined,
 		context.subscriptions
 	);
+
+
 	activateSWSTerminal();	
 	vscode.commands.registerCommand("sws.addScript", async ()=>{
 		const swsScriptUris:vscode.Uri[] = await vscode.workspace.findFiles('.vscode/*.json');

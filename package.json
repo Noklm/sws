@@ -17,6 +17,7 @@
 	"activationEvents": [
 		"onDebug",
 		"onCommand:sws.showConfig",
+		"onCommand:sws.refreshScripts",
 		"onCommand:sws.addScript",
 		"onCommand:sws.build",
 		"onCommand:sws.clean",
@@ -33,6 +34,22 @@
 			  "url": "./schemas/sws.schema.json"
 			}
 		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "sws.refreshScripts",
+					"when": "view == swsScripts",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "sws.execute",
+					"when": "view == swsScripts && viewItem == script",
+					"group": "inline"
+				}
+			]
+		},
 		"views": {
 			"explorer": [
 				{
@@ -150,6 +167,22 @@
 			{
 				"command": "sws.flash",
 				"title": "Flash"
+			},
+			{
+				"command":"sws.refreshScripts",
+				"title":"Refresh Scripts",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "sws.execute",
+				"title": "Executes a script",
+				"icon": {
+					"light": "resources/light/play-button-black.svg",
+					"dark": "resources/dark/play-button-white.png"
+				}
 			}
 		],
 		"keybindings": [
