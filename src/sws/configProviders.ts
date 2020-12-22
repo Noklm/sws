@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { IScript } from './iScript';
+
 export class ScriptsProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<Project | undefined> = new vscode.EventEmitter<Project | undefined>();
     readonly onDidChangeTreeData: vscode.Event<Project | undefined> = this._onDidChangeTreeData.event;
