@@ -17,13 +17,24 @@ export async function activate(context: vscode.ExtensionContext) {
 	const showConfig = "sws.showConfig";
 	
 	activateSWSDebug(context);
+	const commandHandler = (msg: String): void => {
+		vscode.window.activeTerminal?.sendText(`make -s ${msg}`);
+	};
+
 	vscode.commands.registerCommand('sws.refreshScripts', (provider: IConfigProvider) => {
 		provider.refresh();
 	});
+
 	vscode.commands.registerCommand('sws.execute', (contextItem: IScript) => {
 		contextItem.execute();
 
 	});
+
+	vscode.commands.registerCommand(build, commandHandler);
+	vscode.commands.registerCommand(clean, commandHandler);
+	vscode.commands.registerCommand(flash, commandHandler);
+	vscode.commands.registerCommand(showConfig, commandHandler);
+	
 	const swsConfManager:IConfigManager<IConfigProvider> = new SwsConfigManager("**/.vscode/sws.json");
 	await swsConfManager.init();
 
@@ -34,9 +45,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		const terminal = vscode.window.createTerminal(options);
 		terminal.show();
 	};
-	const commandHandler = (msg: String): void => {
-		vscode.window.activeTerminal?.sendText(`make -s ${msg}`);
-	};
 
 	vscode.workspace.onDidChangeConfiguration(
 		activateSWSTerminal,
@@ -44,17 +52,12 @@ export async function activate(context: vscode.ExtensionContext) {
 		context.subscriptions
 	);
 
-
 	activateSWSTerminal();	
 	vscode.commands.registerCommand("sws.addScript", async ()=>{
 		const swsScriptUris:vscode.Uri[] = await vscode.workspace.findFiles('.vscode/*.json');
 		vscode.window.showInformationMessage(`${swsScriptUris}`);
 		vscode.window.showInformationMessage("Script added");
 	});
-	vscode.commands.registerCommand(build, commandHandler);
-	vscode.commands.registerCommand(clean, commandHandler);
-	vscode.commands.registerCommand(flash, commandHandler);
-	vscode.commands.registerCommand(showConfig, commandHandler);
 }
 
 // this method is called when your extension is deactivated
