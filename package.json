@@ -29,8 +29,8 @@
 	"contributes": {
 		"jsonValidation": [
 			{
-			  "fileMatch": "sws.json",
-			  "url": "./schemas/sws.schema.json"
+				"fileMatch": "sws.json",
+				"url": "./schemas/sws.schema.json"
 			}
 		],
 		"menus": {
@@ -52,16 +52,16 @@
 		"views": {
 			"explorer": [
 				{
-				"id": "swsScripts",
-				"name": " SWS Scripts",
-				"when": "displaySwsScripts"
+					"id": "swsScripts",
+					"name": " SWS Scripts",
+					"when": "displaySwsScripts"
 				}
 			]
 		},
 		"viewsWelcome": [
 			{
-			  "view": "swsScripts",
-			  "contents": "No sws.json found.\n"
+				"view": "swsScripts",
+				"contents": "No sws.json found.\n"
 			}
 		],
 		"configuration": {
@@ -168,8 +168,8 @@
 				"title": "Flash"
 			},
 			{
-				"command":"sws.refreshScripts",
-				"title":"Refresh Scripts",
+				"command": "sws.refreshScripts",
+				"title": "Refresh Scripts",
 				"icon": {
 					"light": "resources/light/refresh.svg",
 					"dark": "resources/dark/refresh.svg"
@@ -253,10 +253,10 @@
 								],
 								"default": "UPDI"
 							},
-							"interfaceClock":{
-								"type":"number",
-								"description":"The clock frequency used by the debug interface in Hz",
-								"default":500000
+							"interfaceClock": {
+								"type": "number",
+								"description": "The clock frequency used by the debug interface in Hz",
+								"default": 500000
 							},
 							"interfaceProperties": {
 								"type": "InterfaceType",
@@ -267,9 +267,9 @@
 									"KeepTimersRunning": true
 								}
 							},
-							"launchParameters":{
-								"type":"object",
-								"properties":{
+							"launchParameters": {
+								"type": "object",
+								"properties": {
 									"LaunchSuspended": {
 										"type": "boolean",
 										"description": "Suspend after launch.",
@@ -326,7 +326,11 @@
 										"default": "C:/toolchains/packs/atmel/ATtiny_DFP/1.7.330/Atmel.ATtiny_DFP.pdsc"
 									}
 								},
-								"required":["UseGdb", "GdbLocation", "PackPath"]
+								"required": [
+									"UseGdb",
+									"GdbLocation",
+									"PackPath"
+								]
 							},
 							"remapSourcePathFrom": {
 								"type": "string",
@@ -356,7 +360,7 @@
 						"tool": "${config:sws.config.TOOL}",
 						"interface": "${config:sws.config.INTERFACE}",
 						"interfaceClock": 500000,
-						"launchParameters":{
+						"launchParameters": {
 							"UseGdb": true,
 							"GdbLocation": "C:\\toolchains\\avr-gcc_5-4\\bin\\avr-gdb.exe",
 							"PackPath": "C:/toolchains/packs/atmel/${config:sws.config.PACK}/${config:sws.config.PACK_VERSION}/Atmel.${config:sws.config.PACK}.pdsc",
@@ -387,22 +391,22 @@
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
-		"@types/mocha": "^8.0.4",
-		"@types/node": "^14.14.7",
-		"@types/vscode": "^1.51.0",
+		"@types/mocha": "^8.2.0",
+		"@types/node": "^14.14.14",
+		"@types/vscode": "^1.52.0",
 		"@typescript-eslint/eslint-plugin": "^2.30.0",
 		"@typescript-eslint/parser": "^2.30.0",
 		"eslint": "^6.8.0",
 		"glob": "^7.1.6",
 		"mocha": "^8.2.1",
 		"typescript": "^3.9.7",
-		"vscode-debugadapter-testsupport": "^1.42.0",
+		"vscode-debugadapter-testsupport": "^1.43.0",
 		"vscode-test": "^1.4.1"
 	},
 	"dependencies": {
 		"@types/ws": "^7.4.0",
-		"vscode-debugadapter": "^1.42.1",
-		"vscode-debugprotocol": "^1.42.0",
-		"ws": "^7.4.0"
+		"vscode-debugadapter": "^1.43.0",
+		"vscode-debugprotocol": "^1.43.0",
+		"ws": "^7.4.1"
 	}
 }
