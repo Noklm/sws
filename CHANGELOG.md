@@ -2,15 +2,20 @@
 
 All notable changes to the "sws" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
 ## [0.0.1] - 2020-11-01
 ### Added
-- 3 commands: clean, compile and flash 
+- 3 commands: clean, compile and flash with keybinding
 
 ## [1.0.0]- 2020-12-09
 ### Added
--  Debug Adapter that debug C on AVR target 
+- Launch a program (.elf), with launching progress
+- Debug Adapter that debug C on AVR target
+- Step in your code
+- Use Breakpoints
+- See locals variables
+- Watch globals variables
+- Go deep in struct, union, tab variables
+- See registers
 
 ## [1.0.1] - 2020-12-10
 ### Fixed
