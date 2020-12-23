@@ -103,12 +103,17 @@ Vous êtes maintenant en mesure de débugger votre système.
 | bootSegment       | TODO                                                         |
 | packPath          | Chemin vers le pack atmel (.pdsc) du mico-contrôleur         |
 
+# SWS Scripting
+Avec un fichier de configuration sws.json vous pouvez lister differentes lignes de commande afin de lancer d'un simple clique depuis la UI dans un terminal actif. Attention si aucun terminal est ouvert dans VScode les scripts ne seront pas exécutés.
+
+![](images/sws_scripts.gif)
+
 # Release Notes
 
 ## 0.0.1
 Implémentation des commandes de base de l'extension: compiler, programmer.
 
-### 1.0.0
+## 1.0.0
 Création du "debug adapter" permettant de debugger n'importe quel microcontrôleur Atmel en utilisant AVR-GDB.
 Le DA permet de communiquer avec ATBackend afin de connaitre l'état du microcontroleur durant l'exécution d'un processus par ce dernier.
 
@@ -123,3 +128,9 @@ Cette extension vous permet de:
 * Afficher chaque champ d'une structure
 * Suivre l'évolution d'une variable globale dans l'espace "watch"
 * Voir la valeur d'une variable en passant la souris dessus
+
+## 1.0.1
+Correction, la barre de chargement ne fonctionnait plus après une session de débug
+
+## 1.1.0
+Sws scripting feature.
