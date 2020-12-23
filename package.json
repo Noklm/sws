@@ -9,7 +9,7 @@
 		"url": "https://github.com/juliendland/sws"
 	},
 	"engines": {
-		"vscode": "^1.51.1"
+		"vscode": "^1.52.0"
 	},
 	"categories": [
 		"Other"
@@ -94,7 +94,8 @@
 					"type": "string",
 					"scope": "machine-overridable",
 					"default": "8000000",
-					"description": "The frequency on which the CPU runs"
+					"description": "The frequency on which the CPU runs",
+					"pattern": "[0-9]*"
 				},
 				"sws.config.PACK": {
 					"type": "string",
