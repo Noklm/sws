@@ -13,13 +13,25 @@
   "required":["scripts"],
   "defaultSnippets": [
     {
-      "label":"Hello World",
+      "label":"ATmega644PA scripts",
       "body":{
         "scripts":
           {
-            "Hello":"echo Hello World",
-            "Ola":"ola"
+            "Compile":"make %TARGET%",
+            "Clean": "cleanup.bat"
           }
+      }
+    },
+    {
+      "label": "Tiny, Avr128 scripts",
+      "body": {
+        "scripts": {
+          "Compile": "make -s all",
+          "Clean": "make -s clean",
+          "Flash": "make -s flash",
+          "Compile Debug": "make -s all DBG=1",
+          "Clean Debug": "make clean DBG=1"
+        }
       }
     }
   ]

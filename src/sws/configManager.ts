@@ -41,9 +41,10 @@ export class SwsConfigManager implements IConfigManager<ScriptsProvider> {
                 scripts.push(new Script(script, rawScripts[script]));
             }
         } catch (error) {
-            vscode.window.showErrorMessage(`No scripts available in ${e.fsPath} ctr+space to generate`, ...["Generate"]).then((value) => {
-                // TODO: write scripts in the sws.json file
-                console.log(value);
+            vscode.window.showErrorMessage(`No scripts available in ${e.fsPath}`, ...["Generate"]).then((value) => {
+                if (value === "Generate") {
+                    vscode.commands.executeCommand('editor.action.triggerSuggest');
+                }
             });
         }
         this.projects.set(e.fsPath, new Project(e.fsPath, scripts));

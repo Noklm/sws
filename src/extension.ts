@@ -52,12 +52,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		context.subscriptions
 	);
 
-	activateSWSTerminal();	
-	vscode.commands.registerCommand("sws.addScript", async ()=>{
-		const swsScriptUris:vscode.Uri[] = await vscode.workspace.findFiles('.vscode/*.json');
-		vscode.window.showInformationMessage(`${swsScriptUris}`);
-		vscode.window.showInformationMessage("Script added");
-	});
+	activateSWSTerminal();
 }
 
 // this method is called when your extension is deactivated

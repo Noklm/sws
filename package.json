@@ -18,7 +18,6 @@
 		"onDebug",
 		"onCommand:sws.showConfig",
 		"onCommand:sws.refreshScripts",
-		"onCommand:sws.addScript",
 		"onCommand:sws.build",
 		"onCommand:sws.clean",
 		"onCommand:sws.flash",
@@ -62,7 +61,7 @@
 		"viewsWelcome": [
 			{
 			  "view": "swsScripts",
-			  "contents": "No sws scripts found.\n[Add Script](command:sws.addScript)"
+			  "contents": "No sws.json found.\n"
 			}
 		],
 		"configuration": {
@@ -178,7 +177,7 @@
 			},
 			{
 				"command": "sws.execute",
-				"title": "Executes a script",
+				"title": "Executes the script",
 				"icon": {
 					"light": "resources/light/play-button-black.svg",
 					"dark": "resources/dark/play-button-white.png"
