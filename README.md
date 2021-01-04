@@ -41,9 +41,9 @@ Ces commandes de base sont gérées par le makefile.
 ## Configuration typique (launch.json)
 Avant de pouvoir débugger avec l'extension il vous faudra une configuration contenu dans un fichier nommé launch.json situé dans le dossier .vscode.
 
-Si ce fichier n'existe pas il est automatiquement créé en passant par l'onglet "Run and Debug" et en cliquant sur "créer un fichier launch.json" ensuite il vous faudra choisir l'environnement de débug "C (AVR-GDB)". Le fichier sera automatiquement généré. La plupart des paramètres n'ont pas besoin d'être modifiés: ils sont liés aux settings que vous avez rentrés pour l'extension SWS, libre à vous de les modifier.
+Si ce fichier n'existe pas il est automatiquement créé en passant par l'onglet "Run and Debug" et en cliquant sur "créer un fichier launch.json" ensuite il vous faudra choisir l'environnement de débug `"C (AVR-GDB)"`. Le fichier sera automatiquement généré. La plupart des paramètres n'ont pas besoin d'être modifiés: ils sont liés aux settings que vous avez rentrés pour l'extension SWS, libre à vous de les modifier.
 
-Si un launch.json existe déjà et qu'aucune configuration ne correspond à "C (AVR-GDB)" cliquer sur le bouton "ajouter une configuration" dans le fichier.
+Si un launch.json existe déjà et qu'aucune configuration ne correspond à `"C (AVR-GDB)"` cliquer sur le bouton `"ajouter une configuration"` dans le fichier.
 
 Le JSON ci-dessous est un exemple de configuration.
 
@@ -72,11 +72,11 @@ Le JSON ci-dessous est un exemple de configuration.
 }
 ```
 ### Lancer une session de debug
-Une fois votre configuration paramétrée, cliquez sur le bouton "play" ou "F5" pour démarrer votre session de débug. 
+Une fois votre configuration paramétrée, cliquez sur le bouton `play` ou `F5` pour démarrer votre session de débug. 
 Le GIF ci-dessous montre une session de débug.
-Le fichier elf est d'abord programmé et un spinner indique la progression. Ensuite le programme est exécuté puis mis en pause au début de la fonction main(). Enfin le fichier source s'affiche et vous pouvez naviguer avec les commandes de debug classiques (run, step in, ...)
+Le fichier elf est d'abord programmé et un spinner indique la progression. Ensuite le programme est exécuté puis mis en pause au début de la fonction `main()`. Enfin le fichier source s'affiche et vous pouvez naviguer avec les commandes de debug classiques (run, step in, ...)
 
-![](images/sws_operation.gif)
+![Basic operations](images\sws_operation.gif)
 
 Vous êtes maintenant en mesure de débugger votre système.
 
@@ -106,14 +106,16 @@ Vous êtes maintenant en mesure de débugger votre système.
 # SWS Scripting
 Avec un fichier de configuration sws.json vous pouvez lister differentes lignes de commande afin de lancer d'un simple clique depuis la UI dans un terminal actif. Attention si aucun terminal est ouvert dans VScode les scripts ne seront pas exécutés.
 
-![](images/sws_scripts.gif)
+![Scripting feature](images\sws_scripts.gif)
 
 # Release Notes
 
-## 0.0.1
+## [0.0.1] - 2020-11-01
+### Ajout
 Implémentation des commandes de base de l'extension: compiler, programmer.
 
-## 1.0.0
+## [1.0.0]- 2020-12-09
+### Ajout
 Création du "debug adapter" permettant de debugger n'importe quel microcontrôleur Atmel en utilisant AVR-GDB.
 Le DA permet de communiquer avec ATBackend afin de connaitre l'état du microcontroleur durant l'exécution d'un processus par ce dernier.
 
@@ -129,8 +131,10 @@ Cette extension vous permet de:
 * Suivre l'évolution d'une variable globale dans l'espace "watch"
 * Voir la valeur d'une variable en passant la souris dessus
 
-## 1.0.1
-Correction, la barre de chargement ne fonctionnait plus après une session de débug
+## [1.0.1] - 2020-12-10
+### Correction
+La barre de chargement ne fonctionnait plus après une session de débug
 
-## 1.1.0
-Sws scripting feature.
+## [1.1.0] - 2020-12-22
+### Ajout
+Fonctionnalité de création de scripts.
