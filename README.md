@@ -35,7 +35,7 @@ Ces commandes de base sont gérées par le makefile.
 | make -s clean | ctrl+alt+c | Supprime les objets et binaires dans out                |
 
   
-# SWS Debugger
+# AVR Debugger
 ## Exemples d'utilisation
 
 ## Configuration typique (launch.json)
@@ -103,7 +103,7 @@ Vous êtes maintenant en mesure de débugger votre système.
 | bootSegment       | TODO                                                         |
 | packPath          | Chemin vers le pack atmel (.pdsc) du mico-contrôleur         |
 
-# SWS Scripting
+# Scripting
 Avec un fichier de configuration sws.json vous pouvez lister differentes lignes de commande afin de lancer d'un simple clique depuis la UI dans un terminal actif. Attention si aucun terminal est ouvert dans VScode les scripts ne seront pas exécutés.
 
 ![Scripting feature](images/sws_scripts.gif)
