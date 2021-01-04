@@ -76,7 +76,7 @@ Une fois votre configuration paramétrée, cliquez sur le bouton `play` ou `F5` 
 Le GIF ci-dessous montre une session de débug.
 Le fichier elf est d'abord programmé et un spinner indique la progression. Ensuite le programme est exécuté puis mis en pause au début de la fonction `main()`. Enfin le fichier source s'affiche et vous pouvez naviguer avec les commandes de debug classiques (run, step in, ...)
 
-![Basic operations](images\sws_operation.gif)
+![Basic operations](images/sws_operation.gif)
 
 Vous êtes maintenant en mesure de débugger votre système.
 
@@ -106,7 +106,7 @@ Vous êtes maintenant en mesure de débugger votre système.
 # SWS Scripting
 Avec un fichier de configuration sws.json vous pouvez lister differentes lignes de commande afin de lancer d'un simple clique depuis la UI dans un terminal actif. Attention si aucun terminal est ouvert dans VScode les scripts ne seront pas exécutés.
 
-![Scripting feature](images\sws_scripts.gif)
+![Scripting feature](images/sws_scripts.gif)
 
 # Release Notes
 
