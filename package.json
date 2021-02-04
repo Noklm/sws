@@ -23,7 +23,8 @@
 		"onCommand:sws.flash",
 		"workspaceContains:**/src",
 		"workspaceContains:.vscode/sws.json",
-		"onLanguage:c"
+		"onLanguage:c",
+		"onView:atPack"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -49,7 +50,22 @@
 				}
 			]
 		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "package-explorer",
+					"title": "Package Explorer",
+					"icon": "resources/package-explorer.svg"
+				}
+			]
+		},
 		"views": {
+			"package-explorer":[
+				{
+					"id": "atPack",
+					"name":"Atmel Pack"
+				}
+			],
 			"explorer": [
 				{
 					"id": "swsScripts",
