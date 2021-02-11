@@ -200,8 +200,8 @@
 				"command": "sws.execute",
 				"title": "Executes the script",
 				"icon": {
-					"light": "resources/light/play-button-black.svg",
-					"dark": "resources/dark/play-button-white.png"
+					"light": "resources/light/play.svg",
+					"dark": "resources/dark/play.svg"
 				}
 			}
 		],
