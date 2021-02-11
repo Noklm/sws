@@ -3,7 +3,7 @@ import { IConfigManager } from './IConfigManager';
 import { Project, Script, ScriptsProvider } from './configProviders';
 
 export class SwsConfigManager implements IConfigManager<ScriptsProvider> {
-    globPattern: vscode.GlobPattern;
+    globPattern: vscode.GlobPattern | string;
     watcher: vscode.FileSystemWatcher;
     provider: ScriptsProvider | undefined;
     projects: Map<string, Project>;
