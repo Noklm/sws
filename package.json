@@ -62,8 +62,12 @@
 		"views": {
 			"package-explorer": [
 				{
-					"id": "atPack",
-					"name": "Atmel Pack"
+					"id": "pdsc",
+					"name": "Pack infos"
+				},
+				{
+					"id": "atdf",
+					"name": "Device infos"
 				}
 			],
 			"explorer": [
