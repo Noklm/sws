@@ -1,9 +1,7 @@
 import * as vscode from 'vscode';
 import { parse } from './packser';
-import { DeviceTreeItem } from './pdsc/treeItems/deviceTreeItem';
-import { IDevice, IFamily } from './pdsc/iFamily';
 import { ITreeDataProvider } from '../sws/iTreeDataProvider';
-import { ITreeContainer } from '../sws/iTreeItem';
+import { ITreeContainer } from '../sws/iTreeContainer';
 import { IPeripheral } from './atdf/device/iPeripheral';
 import { IModule } from './atdf/module/iModule';
 import { PeripheralTreeItem } from './atdf/treeItems/peripheralTreeItem';

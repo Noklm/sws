@@ -1,6 +1,6 @@
 import path = require('path');
 import * as vscode from 'vscode';
-import { ITreeContainer } from '../../../sws/iTreeItem';
+import { ITreeContainer } from '../../../sws/iTreeContainer';
 import { IInstance } from '../device/iInstance';
 import { IRegister } from '../module/iRegister';
 import { RegisterTreeItem } from './registerTreeItem';
