@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IDevice, IEnvironment } from '../iFamily';
-import { ITreeContainer } from '../../../sws/iTreeItem';
+import { ITreeContainer } from '../../../sws/iTreeContainer';
 import { MemoryTreeItem } from './memoryTreeItem';
 export class DeviceTreeItem extends vscode.TreeItem implements ITreeContainer{
     private _children: MemoryTreeItem[];

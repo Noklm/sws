@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ITreeContainer } from '../../../sws/iTreeItem';
+import { ITreeContainer } from '../../../sws/iTreeContainer';
 import { IBitField } from '../module/iBitField';
 import { IMode } from '../module/iMode';
 import { BitfieldTreeItem } from './bitFieldTreeItem';

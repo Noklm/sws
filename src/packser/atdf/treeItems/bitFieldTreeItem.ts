@@ -1,6 +1,6 @@
 import path = require('path');
 import * as vscode from 'vscode';
-import { ITreeContainer } from '../../../sws/iTreeItem';
+import { ITreeContainer } from '../../../sws/iTreeContainer';
 import { IBitField } from '../module/iBitField';
 
 export class BitfieldTreeItem extends vscode.TreeItem implements ITreeContainer{

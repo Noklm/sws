@@ -3,7 +3,7 @@ import { parse } from './packser';
 import { DeviceTreeItem } from './pdsc/treeItems/deviceTreeItem';
 import { IDevice, IFamily } from './pdsc/iFamily';
 import { ITreeDataProvider } from '../sws/iTreeDataProvider';
-import { ITreeContainer } from '../sws/iTreeItem';
+import { ITreeContainer } from '../sws/iTreeContainer';
 
 export class PackTreeProvider implements ITreeDataProvider<vscode.TreeItem | ITreeContainer>{
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined> = new vscode.EventEmitter<vscode.TreeItem | undefined>();

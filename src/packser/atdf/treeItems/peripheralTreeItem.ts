@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ITreeContainer } from '../../../sws/iTreeItem';
+import { ITreeContainer } from '../../../sws/iTreeContainer';
 import { IInstance } from '../device/iInstance';
 import { IPeripheral } from '../device/iPeripheral';
 import { IRegisterGroup } from '../module/iRegisterGroup';
