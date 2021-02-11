@@ -1,7 +1,7 @@
 import { IAddressSpace } from "./iAddressSpace";
 import { IInterface } from "./iInterface";
 import { IInterrupt } from "./iInterrupt";
-import { IModule } from "./iModule";
+import { IPeripheral } from "./iPeripheral";
 import { IPropertyGroup } from "./iPropertyGroup";
 
 export interface IDevice{
@@ -9,7 +9,7 @@ export interface IDevice{
     family: string
     name: string
     "address-spaces": IAddressSpace[]
-    peripherals: IModule[]
+    peripherals: IPeripheral[]
     interrupts: IInterrupt[]
     interfaces: IInterface[]
     "property-groups": IPropertyGroup[]

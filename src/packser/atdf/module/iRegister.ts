@@ -1,4 +1,5 @@
 import { IBitField } from "./iBitField";
+import { IMode } from "./iMode";
 
 export interface IRegister{
     caption: string
@@ -8,4 +9,5 @@ export interface IRegister{
     rw: string
     size: number
     bitfield?: IBitField | IBitField[]
+    mode?: IMode | IMode[]
 }

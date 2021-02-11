@@ -3,6 +3,6 @@ import { ISignal } from "./iSignal";
 
 export interface IInstance{
     name: string
-    "register-group": IRegisterGroup
+    "register-group"?: IRegisterGroup
     signals: ISignal[]
 }
