@@ -4,14 +4,17 @@ import { DeviceTreeItem } from './pdsc/treeItems/deviceTreeItem';
 import { IDevice, IFamily } from './pdsc/iFamily';
 import { ITreeDataProvider } from '../sws/iTreeDataProvider';
 import { ITreeContainer } from '../sws/iTreeContainer';
+import { ICompile } from '../sws/iSwsConfig';
 
 export class PackTreeProvider implements ITreeDataProvider<vscode.TreeItem | ITreeContainer>{
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined> = new vscode.EventEmitter<vscode.TreeItem | undefined>();
     readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined> = this._onDidChangeTreeData.event;
 
     private _family: IFamily;
-    constructor(pack: any) {
+    private _atdfProvider: ITreeDataProvider<vscode.TreeItem | ITreeContainer>;
+    constructor(pack: any, atdfProvider: ITreeDataProvider<vscode.TreeItem | ITreeContainer>) {
         this._family = pack.package.devices[0];
+        this._atdfProvider = atdfProvider;
         vscode.workspace.onDidChangeConfiguration((evt: vscode.ConfigurationChangeEvent) => {
             // #TODO: refresh only when target settings are changed
             this.refresh();
@@ -32,13 +35,13 @@ export class PackTreeProvider implements ITreeDataProvider<vscode.TreeItem | ITr
     getChildren(element?: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem[]> {
         if (element && 'getChildren' in element) {
             const item = <ITreeContainer>element;
+            this._atdfProvider.refresh(element);
             return item.getChildren();
         }
         return this.getDepsInPack();
     }
 
     private getDepsInPack(): vscode.TreeItem[] {
-        console.log(this._family);
         const items: vscode.TreeItem[] = new Array<vscode.TreeItem>();
         this._family.device.forEach((device: IDevice) => {
             items.push(new DeviceTreeItem(device));
@@ -47,7 +50,7 @@ export class PackTreeProvider implements ITreeDataProvider<vscode.TreeItem | ITr
     }
 
     refresh(element?: vscode.TreeItem) {
-        const config = vscode.workspace.getConfiguration("sws.config");
+        const config = <ICompile><unknown>vscode.workspace.getConfiguration("sws.config");
         const self = this;
         return new Promise<boolean>(function (resolve, reject) {
 

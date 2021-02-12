@@ -9,10 +9,10 @@ import { IConfigProvider } from './sws/iConfigProvider';
 import { IConfigManager } from './sws/IConfigManager';
 import { IScript } from './sws/iScript';
 import { PackTreeProvider } from './packser/pdscTreeProvider';
-import { PackManager } from './packser/packManager';
 import { parse } from './packser/packser';
 import { IAtdf } from './packser/atdf/iAtdf';
 import { AtdfTreeProvider } from './packser/atdfTreeProvider';
+import { ISwsConfig } from './sws/iSwsConfig';
 
 // this method is called when your extension is activated
 export async function activate(context: vscode.ExtensionContext) {
@@ -42,16 +42,16 @@ export async function activate(context: vscode.ExtensionContext) {
 	
 	const swsConfManager:IConfigManager<IConfigProvider> = new SwsConfigManager("**/.vscode/sws.json");
 	await swsConfManager.init();
-	const config = vscode.workspace.getConfiguration('sws');
-	const core: string = config.config.CORE as string;
+	const config: ISwsConfig = <ISwsConfig><unknown>vscode.workspace.getConfiguration('sws');
 
-	parse(`/toolchains/packs/${config.config.PACK}/${config.config.PACK_VERSION}/atdf/${core.toUpperCase()}.atdf`).then((result) => {
+	parse(`/toolchains/packs/${config.config.PACK}/${config.config.PACK_VERSION}/atdf/${config.config.CORE.toUpperCase()}.atdf`).then((result) => {
 		const atdfRes: IAtdf = result["avr-tools-device-file"];
-		vscode.window.registerTreeDataProvider('atdf', new AtdfTreeProvider(atdfRes.devices[0].peripherals, atdfRes.modules));
+		const atdfProvider = new AtdfTreeProvider(atdfRes.devices[0].peripherals, atdfRes.modules);
+		vscode.window.registerTreeDataProvider('atdf', atdfProvider);
+		parse(`/toolchains/packs/${config.config.PACK}/${config.config.PACK_VERSION}/Atmel.${config.config.PACK}.pdsc`).then((result) => {
+			vscode.window.registerTreeDataProvider('pdsc', new PackTreeProvider(result, atdfProvider));
+		});
 	});
-	const packrser: IConfigManager<PackTreeProvider> = new PackManager(config.config.PACK, config.config.PACK_VERSION);
-	packrser.init();
-	// vscode.window.registerTreeDataProvider('atPack', new PackTreeProvider());
 
 	const activateSWSTerminal = (e?: vscode.ConfigurationChangeEvent) => {
 		const compiler = vscode.workspace.getConfiguration('sws');

@@ -6,6 +6,7 @@ import { IPeripheral } from './atdf/device/iPeripheral';
 import { IModule } from './atdf/module/iModule';
 import { PeripheralTreeItem } from './atdf/treeItems/peripheralTreeItem';
 import { IAtdf } from './atdf/iAtdf';
+import { ICompile } from '../sws/iSwsConfig';
 
 export class AtdfTreeProvider implements ITreeDataProvider<vscode.TreeItem | ITreeContainer>{
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined> = new vscode.EventEmitter<vscode.TreeItem | undefined>();
@@ -53,11 +54,11 @@ export class AtdfTreeProvider implements ITreeDataProvider<vscode.TreeItem | ITr
     }
 
     refresh(element?: vscode.TreeItem) {
-        const config = vscode.workspace.getConfiguration("sws.config");
-        const core: string = config.CORE as string;
+        let config = <ICompile><unknown>vscode.workspace.getConfiguration("sws.config");
+        const core = element ? <string>element.label : config.CORE;
         const self = this;
         return new Promise<boolean>(function (resolve, reject) {
-            parse(`/toolchains/packs/${config.PACK}/${config.PACK_VERSION}/atdf/${core.toUpperCase()}.atdf`).then((result) => {
+            parse(`C:/toolchains/packs/${config.PACK}/${config.PACK_VERSION}/atdf/${core.toUpperCase()}.atdf`).then((result) => {
                 const atdfRes: IAtdf = result["avr-tools-device-file"];
                 self._peripherals = atdfRes.devices[0].peripherals;
                 self._modules = atdfRes.modules;
