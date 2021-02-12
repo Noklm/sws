@@ -36,13 +36,10 @@ export class PeripheralTreeItem extends vscode.TreeItem implements ITreeContaine
         const children: InstanceTreeItem[] = new Array<InstanceTreeItem>();
         if (this._registerGroup) {
             for (let instance of this._children) {
-                const register = this._registerGroup.find((registerGroup: IRegisterGroup) => {
-                    return registerGroup.name === instance['register-group']?.['name-in-module'];
-                })?.register;
-                if (register && !Array.isArray(register)) {
-                    children.push(new InstanceTreeItem(instance, [register]));
+                if (!Array.isArray(this._registerGroup)) {
+                    children.push(new InstanceTreeItem(instance, [this._registerGroup]));
                 } else {
-                    children.push(new InstanceTreeItem(instance, register));
+                    children.push(new InstanceTreeItem(instance, this._registerGroup));
                 }
             }
             return children;
