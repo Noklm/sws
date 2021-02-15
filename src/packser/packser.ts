@@ -16,6 +16,7 @@ parser.onopentag = function (node: sax.Tag) {
         fifo.unshift(node.attributes);
     }
 };
+
 parser.onclosetag = function (tag: string) {
     const child = fifo.shift();
     if (Array.isArray(fifo[0])) {
@@ -44,15 +45,19 @@ parser.onattribute = function (attr: { name: string, value: string | number }) {
 
 export async function parse(atdfPath: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-        const atdf_string = fs.readFileSync(atdfPath, { encoding: 'ascii' });
+        const atdf_string = fs.readFileSync(atdfPath, {
+            encoding: 'ascii'
+        });
 
         parser.onend = function () {
             resolve(fifo.shift());
             fifo.push({});
         };
+
         parser.onerror = function (err: Error) {
             reject(err);
         };
+
         parser.write(atdf_string).close();
     });
 }

@@ -5,5 +5,5 @@ export interface IMemorySegment{
     rw: string
     size: number
     start: number
-    type:string
+    type: string
 }
