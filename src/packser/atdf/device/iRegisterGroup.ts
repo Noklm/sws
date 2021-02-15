@@ -3,6 +3,6 @@ export interface IDeviceRegisterGroup{
     name: string
     "name-in-module": string
     offset: number
-    "union-tag-value": number
+    "union-tag-value"?: number
 
 }
